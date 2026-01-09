@@ -7,8 +7,7 @@ public enum TokenType
     Color,
     LParen,
     RParen,
-    Comma,
-    Repeat,     // x
+    Semicolon,
     FastenOff,  // FO
     EndOfInput
 }

@@ -1,21 +1,20 @@
-Crochet Pattern DSL – MVP
-
 <form method="post" asp-action="Index">
-
-    @model List<CrochetPatternParser.Core.Tokenizer.Token>
-
-    <textarea name="pattern" rows="6" cols="60"></textarea>
+    <textarea name="pattern" rows="6" cols="60">@ViewBag.Pattern</textarea>
     <br />
     <button type="submit">Validate</button>
+</form>
 
-@if (Model != null)
+@if (ViewBag.Message != null)
+{
+    <div><strong>@ViewBag.Message</strong></div>
+}
+
+@if (ViewBag.Tokens != null)
 {
     <ul>
-        @foreach (var token in Model)
+        @foreach (var token in (List<CrochetPatternParser.Core.Tokenizer.Token>)ViewBag.Tokens)
         {
             <li>@token.Type — "@token.Lexeme"</li>
         }
     </ul>
 }
-
-</form>

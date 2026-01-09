@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace CrochetPatternParser.Core.Tokenizer;
@@ -35,11 +36,15 @@ public class Tokenizer
             }
             else if (char.IsLetter(c))
             {
-                tokens.Add(ReadWord());
+                var token = ReadWord();
+                if (token != null)
+                    tokens.Add(token);
             }
             else
             {
-                tokens.Add(ReadSymbol());
+                var token = ReadSymbol();
+                if (token != null)
+                    tokens.Add(token);
             }
         }
 
@@ -59,7 +64,7 @@ public class Tokenizer
         return new Token(TokenType.Number, sb.ToString());
     }
 
-    private Token ReadWord()
+    private Token? ReadWord()
     {
         var sb = new StringBuilder();
 
@@ -72,19 +77,19 @@ public class Tokenizer
 
         return word switch
         {
-            "x" => new Token(TokenType.Repeat, "x"),
-
             "sc" or "hdc" or "dc" or "trc" or "inc" or "dec" or "slst"
                 => new Token(TokenType.Stitch, word),
 
             "FO"
                 => new Token(TokenType.FastenOff, word),
+            "x"
+                => null,
 
             _ => throw new Exception($"Unknown keyword: {word}")
         };
     }
 
-    private Token ReadSymbol()
+    private Token? ReadSymbol()
     {
         char c = Advance();
 
@@ -92,9 +97,8 @@ public class Tokenizer
         {
             '(' => new Token(TokenType.LParen, "("),
             ')' => new Token(TokenType.RParen, ")"),
-            ',' => new Token(TokenType.Comma, ","),
-            'x' => new Token(TokenType.Repeat, "x"),
-            _ => throw new Exception($"Unexpected character: {c}")
+            ';' => new Token(TokenType.Semicolon, ";"),
+            _ => null
         };
     }
 
