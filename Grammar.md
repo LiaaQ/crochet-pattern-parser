@@ -1,6 +1,6 @@
 Pattern ::= Round+
 
-Round ::= Element ("," Element)*
+Round ::= Element ("," Element)* ;?
 
 Element ::= Stitch | Group | Color | FastenOff
 
