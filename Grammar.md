@@ -1,26 +1,20 @@
-Pattern       ::= Round+
+Pattern ::= Round+
 
-Round         ::= Statement+
+Round ::= Element ("," Element)* ;?
 
-Statement     ::= ColorDirective | Sequence | FastenOff
+Element ::= Stitch | Group | Color | FastenOff
 
-ColorDirective ::= "@" Identifier
+Group ::= "(" Stitch ("," Stitch)* ")" Number
 
-Sequence      ::= Element ("," Element)*
+Stitch ::= Number? StitchType
 
-Element       ::= Stitch | Group
+StitchType ::= "sc" | "hdc" | "dc" | "trc" | "inc" | "dec" | "slst"
 
-Group         ::= "(" Sequence ")" "x"? Number
+Color ::= "@" letter (letter | digit)*
 
-Stitch        ::= Number? StitchType
+FastenOff ::= "FO"
 
-StitchType    ::= "sc" | "hdc" | "dc" | "trc" | "inc" | "dec" | "slst"
-
-FastenOff     ::= "FO"
-
-Number        ::= integer >= 1
-
-Identifier    ::= letter (letter | digit)*
+Number ::= integer >= 1
 
 ## Examples
 
