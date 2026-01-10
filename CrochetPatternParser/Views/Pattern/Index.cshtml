@@ -1,20 +1,33 @@
+@model CrochetPatternParser.Models.PatternViewModel
+@{
+    ViewData["Title"] = "Crochet Pattern Validator";
+}
+
+<h2>Crochet Pattern Validator</h2>
+
 <form method="post" asp-action="Index">
-    <textarea name="pattern" rows="6" cols="60">@ViewBag.Pattern</textarea>
+    <textarea asp-for="PatternText" rows="6" cols="60"></textarea>
     <br />
     <button type="submit">Validate</button>
 </form>
 
-@if (ViewBag.Message != null)
-{
-    <div><strong>@ViewBag.Message</strong></div>
-}
-
-@if (ViewBag.Tokens != null)
+@if (Model?.Rounds != null && Model.Rounds.Count > 0)
 {
     <ul>
-        @foreach (var token in (List<CrochetPatternParser.Core.Tokenizer.Token>)ViewBag.Tokens)
+    @foreach (var round in Model.Rounds)
+    {
+        if (!string.IsNullOrEmpty(round.Error))
         {
-            <li>@token.Type — "@token.Lexeme"</li>
+            <li style="color:red">
+                ❌ Round @round.RoundIndex: @round.Error
+            </li>
         }
+        else
+        {
+            <li style="color:green">
+                ✅ Round @round.RoundIndex: @round.StitchCount stitches
+            </li>
+        }
+    }
     </ul>
 }

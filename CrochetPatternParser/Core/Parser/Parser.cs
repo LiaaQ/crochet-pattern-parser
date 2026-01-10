@@ -72,12 +72,7 @@ public class Parser
         };
 
         while (Peek().Type == TokenType.Number || Peek().Type == TokenType.Stitch)
-        {
-            if (Peek().Type == TokenType.LParen)
-                throw new Exception("Nested groups are not allowed");
-
             stitches.Add(ParseStitch());
-        }
 
         Expect(TokenType.RParen);
 
@@ -98,7 +93,7 @@ public class Parser
             count = int.Parse(Advance().Lexeme);
         }
 
-           var stitchToken = Expect(TokenType.Stitch);
+        var stitchToken = Expect(TokenType.Stitch);
 
         return new StitchNode(stitchToken.Lexeme, count);
     }
@@ -125,7 +120,9 @@ public class Parser
     private Token Expect(TokenType type)
     {
         if (Peek().Type != type)
-            throw new Exception($"Expected token of type {type}, but got {Peek().Type}");
+            throw new Exception(
+                $"Expected {type}, got {Peek().Type} ('{Peek().Lexeme}')"
+            );
 
         return Advance();
     }

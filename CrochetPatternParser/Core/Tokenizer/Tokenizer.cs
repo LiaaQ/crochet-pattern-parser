@@ -82,8 +82,6 @@ public class Tokenizer
 
             "FO"
                 => new Token(TokenType.FastenOff, word),
-            "x"
-                => null,
 
             _ => throw new Exception($"Unknown keyword: {word}")
         };
