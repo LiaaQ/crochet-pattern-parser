@@ -48,7 +48,7 @@ Example: (2 sc, inc) x 3
 ### Color Directives
 - Colors are set using `@colorName`
 - A color directive applies to all following stitches until overridden
-- Color changes are allowed anywhere, including mid-round
+- Color changes are allowed anywhere, except in groups
 - Colors do not affect stitch count or validation
 
 Example: @white 3 sc @black 3 sc

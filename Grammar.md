@@ -1,10 +1,10 @@
 Pattern ::= Round+
 
-Round ::= Element ("," Element)* ;?
+Round ::= Element (","? Element)* ";"?
 
 Element ::= Stitch | Group | Color | FastenOff
 
-Group ::= "(" Stitch ("," Stitch)* ")" Number
+Group ::= "(" Stitch (","? Stitch)* ")" Number
 
 Stitch ::= Number? StitchType
 
@@ -26,4 +26,4 @@ Number ::= integer >= 1
 
 **Repetition groups**
 - 3 sc, (1 sc, 1 inc) 6
-- (2 sc, 1 inc) x 6
+- (2 sc 1 inc) 6
