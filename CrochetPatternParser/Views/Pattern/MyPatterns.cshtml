@@ -1,0 +1,10 @@
+@model List<CrochetPatternParser.Data.PatternEntity>
+
+<h2>My Saved Patterns</h2>
+
+<ul>
+    @foreach (var pattern in Model)
+    {
+        <li>@pattern.RawText</li>
+    }
+</ul>

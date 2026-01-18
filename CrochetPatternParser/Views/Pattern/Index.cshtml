@@ -5,10 +5,20 @@
 
 <h2>Crochet Pattern Validator</h2>
 
-<form method="post" asp-action="Index">
+<form method="post">
     <textarea asp-for="PatternText" rows="6" cols="60"></textarea>
     <br />
-    <button type="submit">Validate</button>
+
+    <button type="submit" 
+            asp-action="Validate"
+            asp-controller="Pattern">
+        Validate
+    </button>
+    <button type="submit"
+            asp-action="Save"
+            asp-controller="Pattern">
+        Save
+    </button>
 </form>
 
 @if (Model?.Rounds != null && Model.Rounds.Count > 0)
