@@ -6,17 +6,26 @@
 <h2>Crochet Pattern Validator</h2>
 
 <form method="post">
-    <textarea asp-for="PatternText" rows="6" cols="60"></textarea>
+    @if (ViewBag.PatternId != null)
+    {
+        <input type="hidden" name="patternId" value="@ViewBag.PatternId" />
+    }
+    <input type="text" asp-for="Title" id="patternTitle" placeholder="Pattern Title" />
+    <br />
+
+    <textarea asp-for="PatternText" rows="6" cols="60" id="patternText"></textarea>
     <br />
 
     <button type="submit" 
             asp-action="Validate"
-            asp-controller="Pattern">
+            asp-controller="Pattern"
+            id="validateButton">
         Validate
     </button>
     <button type="submit"
             asp-action="Save"
-            asp-controller="Pattern">
+            asp-controller="Pattern"
+            id="saveButton">
         Save
     </button>
 </form>
@@ -40,4 +49,46 @@
         }
     }
     </ul>
+}
+
+
+@section Scripts {
+    <script>
+        let isDirty = false;
+        let hasValidated = false;
+
+        // When user edits the textarea, mark as dirty
+        const textarea = document.getElementById("patternText");
+        textarea.addEventListener("input", () => {
+            isDirty = true;
+            hasValidated = false; // reset validation state on edit
+        });
+
+        // Clicking Validate clears flags to allow form submission
+        const validateButton = document.getElementById("validateButton");
+        validateButton.addEventListener("click", () => {
+            isDirty = false;
+            hasValidated = false;
+        });
+
+        const saveButton = document.getElementById("saveButton");
+        saveButton.addEventListener("click", () => {
+            isDirty = false;
+            hasValidated = false;
+        });
+
+        // When validation results are present, set hasValidated flag
+        @if (Model?.Rounds != null && Model.Rounds.Count > 0)
+        {
+            <text>hasValidated = true;</text>
+        }
+
+        // Warn if leaving with unsaved changes or validation results
+        window.addEventListener("beforeunload", function (e) {
+            if (hasValidated || isDirty) {
+                e.preventDefault();
+                e.returnValue = ''; // required by most browsers
+            }
+        });
+    </script>
 }

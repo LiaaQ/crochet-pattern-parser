@@ -4,6 +4,8 @@ namespace CrochetPatternParser.Data
     {
         public int Id { get; set; }
 
+        public string Title { get; set; } = "Untitled Pattern";
+
         public string RawText { get; set; } = "";
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

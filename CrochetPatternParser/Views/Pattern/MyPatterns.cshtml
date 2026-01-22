@@ -2,9 +2,22 @@
 
 <h2>My Saved Patterns</h2>
 
-<ul>
-    @foreach (var pattern in Model)
-    {
-        <li>@pattern.RawText</li>
-    }
-</ul>
+@if (!Model.Any())
+{
+    <p>You have no saved patterns.</p>
+}
+else
+{
+    <ul>
+        @foreach (var pattern in Model)
+        {
+            <li>
+                <strong>Saved:</strong> @pattern.CreatedAt.ToLocalTime()<br />
+
+                <strong>Title:</strong> @pattern.Title<br />
+
+                <a asp-action="Edit" asp-route-id="@pattern.Id">Edit</a>
+            </li>
+        }
+    </ul>
+}

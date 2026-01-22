@@ -6,6 +6,7 @@ using CrochetPatternParser.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace CrochetPatternParser.Controllers
 {
@@ -34,17 +35,21 @@ namespace CrochetPatternParser.Controllers
         }
 
         [HttpPost]
-        public IActionResult Validate(PatternViewModel model)
+        public IActionResult Validate(PatternViewModel model, int? patternId)
         {
             var viewModel = ValidatePattern(model.PatternText);
+            if (patternId.HasValue)
+            {
+                ViewBag.PatternId = patternId;
+            }
             return View("Index", viewModel);
         }
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Save(PatternViewModel model)
+        public async Task<IActionResult> Save(PatternViewModel model, int? patternId)
         {
-            var viewModel = await SavePattern(model.PatternText);
+            var viewModel = await SavePattern(model.Title, model.PatternText, patternId);
             return View("Index", viewModel);
         }
 
@@ -55,14 +60,35 @@ namespace CrochetPatternParser.Controllers
                 return RedirectToAction("Login", "Account");
 
             var userId = _userManager.GetUserId(User);
-            var patterns = _db.Patterns
-                            .Where(p => p.UserId == userId)
-                            .OrderByDescending(p => p.Id)
-                            .ToList();
+            var patterns = await _db.Patterns
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
 
             return View(patterns);
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var pattern = await _db.Patterns
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+
+            if (pattern == null)
+                return NotFound();
+
+            var viewModel = new PatternViewModel
+            {
+                PatternText = pattern.RawText
+            };
+
+            ViewBag.PatternId = pattern.Id;
+            return View("Index", viewModel);
+        }
 
         private PatternViewModel ValidatePattern(string patternText)
         {
@@ -106,23 +132,43 @@ namespace CrochetPatternParser.Controllers
             return viewModel;
         }
 
-        private async Task<PatternViewModel> SavePattern(string patternText)
+        private async Task<PatternViewModel> SavePattern(string title, string patternText, int? patternId = null)
         {
             var viewModel = new PatternViewModel
             {
+                Title = title,
                 PatternText = patternText
             };
 
             var userId = _userManager.GetUserId(User)
                 ?? throw new InvalidOperationException("Authenticated user has no user ID.");
 
-            var entity = new PatternEntity
+            if (patternId.HasValue)
             {
-                RawText = patternText,
-                UserId = userId
-            };
+                // Update existing pattern
+                var entity = await _db.Patterns
+                    .FirstOrDefaultAsync(p => p.Id == patternId && p.UserId == userId);
 
-            _db.Patterns.Add(entity);
+                if (entity != null)
+                {
+                    entity.Title = title;
+                    entity.RawText = patternText;
+                    _db.Patterns.Update(entity);
+                }
+            }
+            else
+            {
+                // Create new pattern
+                var entity = new PatternEntity
+                {
+                    Title = title,
+                    RawText = patternText,
+                    UserId = userId
+                };
+
+                _db.Patterns.Add(entity);
+            }
+
             await _db.SaveChangesAsync();
 
             return viewModel;
