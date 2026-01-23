@@ -37,7 +37,10 @@ namespace CrochetPatternParser.Controllers
         [HttpPost]
         public IActionResult Validate(PatternViewModel model, int? patternId)
         {
-            var viewModel = ValidatePattern(model.PatternText);
+            var viewModel = ValidatePattern(model.RoundTexts ?? new List<string>());
+            viewModel.Title = model.Title;
+            viewModel.RoundTexts = model.RoundTexts ?? new List<string>();
+            
             if (patternId.HasValue)
             {
                 ViewBag.PatternId = patternId;
@@ -49,7 +52,22 @@ namespace CrochetPatternParser.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(PatternViewModel model, int? patternId)
         {
-            var viewModel = await SavePattern(model.Title, model.PatternText, patternId);
+            // Filter out empty rounds
+            var roundTexts = (model.RoundTexts ?? new List<string>())
+                .Select(r => r?.Trim() ?? string.Empty)
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .ToList();
+
+            if (roundTexts.Count == 0)
+            {
+                ModelState.AddModelError("", "Cannot save pattern with no rounds. Please add at least one round.");
+                model.RoundTexts = model.RoundTexts ?? new List<string>();
+                return View("Index", model);
+            }
+
+            var viewModel = await SavePattern(model.Title, roundTexts, patternId);
+            viewModel.RoundTexts = roundTexts;
+            
             return View("Index", viewModel);
         }
 
@@ -76,23 +94,34 @@ namespace CrochetPatternParser.Controllers
             var userId = _userManager.GetUserId(User);
 
             var pattern = await _db.Patterns
+                .Include(p => p.Rounds)
                 .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
 
             if (pattern == null)
                 return NotFound();
 
+            // Load rounds from database
+            var roundTexts = pattern.Rounds
+                .OrderBy(r => r.RoundNumber)
+                .Select(r => r.Text)
+                .ToList();
+            
             var viewModel = new PatternViewModel
             {
-                PatternText = pattern.RawText
+                Title = pattern.Title,
+                RoundTexts = roundTexts
             };
 
             ViewBag.PatternId = pattern.Id;
             return View("Index", viewModel);
         }
 
-        private PatternViewModel ValidatePattern(string patternText)
+        private PatternViewModel ValidatePattern(List<string> roundTexts)
         {
             var viewModel = new PatternViewModel();
+            
+            // Concatenate rounds for processing
+            var patternText = string.Join(";", roundTexts);
 
             try
             {
@@ -132,12 +161,12 @@ namespace CrochetPatternParser.Controllers
             return viewModel;
         }
 
-        private async Task<PatternViewModel> SavePattern(string title, string patternText, int? patternId = null)
+        private async Task<PatternViewModel> SavePattern(string title, List<string> roundTexts, int? patternId = null)
         {
             var viewModel = new PatternViewModel
             {
                 Title = title,
-                PatternText = patternText
+                RoundTexts = roundTexts
             };
 
             var userId = _userManager.GetUserId(User)
@@ -147,23 +176,45 @@ namespace CrochetPatternParser.Controllers
             {
                 // Update existing pattern
                 var entity = await _db.Patterns
+                    .Include(p => p.Rounds)
                     .FirstOrDefaultAsync(p => p.Id == patternId && p.UserId == userId);
 
                 if (entity != null)
                 {
                     entity.Title = title;
-                    entity.RawText = patternText;
+                    
+                    // Clear existing rounds and add new ones
+                    entity.Rounds.Clear();
+                    for (int i = 0; i < roundTexts.Count; i++)
+                    {
+                        entity.Rounds.Add(new RoundEntity
+                        {
+                            RoundNumber = i + 1,
+                            Text = roundTexts[i]
+                        });
+                    }
+                    
                     _db.Patterns.Update(entity);
                 }
             }
             else
             {
                 // Create new pattern
+                var rounds = new List<RoundEntity>();
+                for (int i = 0; i < roundTexts.Count; i++)
+                {
+                    rounds.Add(new RoundEntity
+                    {
+                        RoundNumber = i + 1,
+                        Text = roundTexts[i]
+                    });
+                }
+                
                 var entity = new PatternEntity
                 {
                     Title = title,
-                    RawText = patternText,
-                    UserId = userId
+                    UserId = userId,
+                    Rounds = rounds
                 };
 
                 _db.Patterns.Add(entity);

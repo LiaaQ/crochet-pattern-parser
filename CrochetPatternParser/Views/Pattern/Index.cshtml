@@ -6,6 +6,7 @@
 <h2>Crochet Pattern Validator</h2>
 
 <form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     @if (ViewBag.PatternId != null)
     {
         <input type="hidden" name="patternId" value="@ViewBag.PatternId" />
@@ -13,8 +14,32 @@
     <input type="text" asp-for="Title" id="patternTitle" placeholder="Pattern Title" />
     <br />
 
-    <textarea asp-for="PatternText" rows="6" cols="60" id="patternText"></textarea>
-    <br />
+    <div id="roundsContainer">
+        @if (Model?.RoundTexts != null && Model.RoundTexts.Count > 0)
+        {
+            @for (int i = 0; i < Model.RoundTexts.Count; i++)
+            {
+                <div class="round-input-group" data-round-index="@i">
+                    <label>Round @(i + 1)</label>
+                    <textarea name="RoundTexts[@i]" rows="1" cols="60" class="round-text">@Model.RoundTexts[i]</textarea>
+                    <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
+                    <br />
+                </div>
+            }
+        }
+        else
+        {
+            <div class="round-input-group" data-round-index="0">
+                <label>Round 1</label>
+                <textarea name="RoundTexts[0]" rows="1" cols="60" class="round-text"></textarea>
+                <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
+                <br />
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="addRound()">Add Round</button>
+    <br /><br />
 
     <button type="submit" 
             asp-action="Validate"
@@ -54,41 +79,129 @@
 
 @section Scripts {
     <script>
+        // State
+        let roundCounter = Math.max(@(Model?.RoundTexts?.Count ?? 0), 1);
         let isDirty = false;
-        let hasValidated = false;
+        let hasValidated = @((Model?.Rounds != null && Model.Rounds.Count > 0) ? "true" : "false");
 
-        // When user edits the textarea, mark as dirty
-        const textarea = document.getElementById("patternText");
-        textarea.addEventListener("input", () => {
+        // Round management
+        function addRound() {
+            const container = document.getElementById("roundsContainer");
+            const roundDiv = document.createElement("div");
+            roundDiv.className = "round-input-group";
+            roundDiv.innerHTML = `
+                <label>Round ${roundCounter + 1}</label>
+                <textarea name="RoundTexts[${roundCounter}]" rows="1" cols="60" class="round-text"></textarea>
+                <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
+                <br />
+            `;
+            container.appendChild(roundDiv);
+            roundCounter++;
             isDirty = true;
-            hasValidated = false; // reset validation state on edit
-        });
-
-        // Clicking Validate clears flags to allow form submission
-        const validateButton = document.getElementById("validateButton");
-        validateButton.addEventListener("click", () => {
-            isDirty = false;
-            hasValidated = false;
-        });
-
-        const saveButton = document.getElementById("saveButton");
-        saveButton.addEventListener("click", () => {
-            isDirty = false;
-            hasValidated = false;
-        });
-
-        // When validation results are present, set hasValidated flag
-        @if (Model?.Rounds != null && Model.Rounds.Count > 0)
-        {
-            <text>hasValidated = true;</text>
         }
 
-        // Warn if leaving with unsaved changes or validation results
-        window.addEventListener("beforeunload", function (e) {
-            if (hasValidated || isDirty) {
-                e.preventDefault();
-                e.returnValue = ''; // required by most browsers
-            }
-        });
+        function deleteRound(button) {
+            button.closest('.round-input-group').remove();
+            reindexRounds();
+            isDirty = true;
+        }
+
+        function reindexRounds() {
+            document.querySelectorAll('.round-input-group').forEach((round, index) => {
+                round.querySelector('label').textContent = `Round ${index + 1}`;
+                round.querySelector('textarea').name = `RoundTexts[${index}]`;
+            });
+            roundCounter = document.querySelectorAll('.round-input-group').length;
+        }
+
+        // Form submission handling
+        function setupFormHandlers() {
+            document.querySelector('form')?.addEventListener('submit', () => {
+                reindexRounds();
+                isDirty = false;
+                hasValidated = false;
+            });
+
+            document.getElementById("validateButton")?.addEventListener("click", () => {
+                isDirty = false;
+                hasValidated = false;
+            });
+            
+            document.getElementById("saveButton")?.addEventListener("click", () => {
+                isDirty = false;
+                hasValidated = false;
+            });
+        }
+
+        // Input tracking
+        function setupInputTracking() {
+            document.addEventListener('input', (e) => {
+                if (e.target.classList.contains('round-text')) {
+                    isDirty = true;
+                    hasValidated = false;
+                }
+            });
+        }
+
+        // Keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (!e.target.classList.contains('round-text')) return;
+
+                const textareas = Array.from(document.querySelectorAll('.round-text'));
+                const currentIndex = textareas.indexOf(e.target);
+
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    addRound();
+                    setTimeout(() => {
+                        const allTextareas = document.querySelectorAll('.round-text');
+                        allTextareas[allTextareas.length - 1]?.focus();
+                    }, 0);
+                } 
+                else if (e.key === 'Delete' && e.ctrlKey) {
+                    e.preventDefault();
+                    const rounds = document.querySelectorAll('.round-input-group');
+                    if (rounds.length > 1) {
+                        e.target.closest('.round-input-group').remove();
+                        reindexRounds();
+                        isDirty = true;
+                        setTimeout(() => {
+                            const allTextareas = document.querySelectorAll('.round-text');
+                            const focusIndex = Math.min(currentIndex, allTextareas.length - 1);
+                            allTextareas[focusIndex]?.focus();
+                        }, 0);
+                    }
+                } 
+                else if (e.key === 'ArrowUp' && e.ctrlKey) {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        textareas[currentIndex - 1]?.focus();
+                    }
+                } 
+                else if (e.key === 'ArrowDown' && e.ctrlKey) {
+                    e.preventDefault();
+                    if (currentIndex < textareas.length - 1) {
+                        textareas[currentIndex + 1]?.focus();
+                    }
+                }
+            });
+        }
+
+        // Unsaved changes warning
+        function setupUnsavedWarning() {
+            window.addEventListener("beforeunload", (e) => {
+                if (hasValidated || isDirty) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        // Initialize all handlers
+        setupFormHandlers();
+        setupInputTracking();
+        setupKeyboardShortcuts();
+        setupUnsavedWarning();
     </script>
 }
