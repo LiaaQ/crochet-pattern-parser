@@ -14,11 +14,13 @@ namespace CrochetPatternParser.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUserEntity> _userManager;
+        private readonly IWebHostEnvironment _environment;
 
-        public PatternController(ApplicationDbContext db, UserManager<ApplicationUserEntity> userManager)
+        public PatternController(ApplicationDbContext db, UserManager<ApplicationUserEntity> userManager, IWebHostEnvironment environment)
         {
             _db = db;
             _userManager = userManager;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -35,11 +37,22 @@ namespace CrochetPatternParser.Controllers
         }
 
         [HttpPost]
-        public IActionResult Validate(PatternViewModel model, int? patternId)
+        public async Task<IActionResult> Validate(PatternViewModel model, int? patternId)
         {
             var viewModel = ValidatePattern(model.RoundTexts ?? new List<string>());
             viewModel.Title = model.Title;
             viewModel.RoundTexts = model.RoundTexts ?? new List<string>();
+            
+            // Handle image upload during validation
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
+            {
+                viewModel.ImagePath = await SaveImageFile(model.ImageFile);
+            }
+            else
+            {
+                // Keep existing image path if no new file uploaded
+                viewModel.ImagePath = model.ImagePath;
+            }
             
             if (patternId.HasValue)
             {
@@ -65,7 +78,14 @@ namespace CrochetPatternParser.Controllers
                 return View("Index", model);
             }
 
-            var viewModel = await SavePattern(model.Title, roundTexts, patternId);
+            // Handle image upload
+            string? imagePath = model.ImagePath; // Keep existing path by default
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
+            {
+                imagePath = await SaveImageFile(model.ImageFile);
+            }
+
+            var viewModel = await SavePattern(model.Title, roundTexts, imagePath, patternId);
             viewModel.RoundTexts = roundTexts;
             
             return View("Index", viewModel);
@@ -109,7 +129,8 @@ namespace CrochetPatternParser.Controllers
             var viewModel = new PatternViewModel
             {
                 Title = pattern.Title,
-                RoundTexts = roundTexts
+                RoundTexts = roundTexts,
+                ImagePath = pattern.ImagePath
             };
 
             ViewBag.PatternId = pattern.Id;
@@ -161,12 +182,13 @@ namespace CrochetPatternParser.Controllers
             return viewModel;
         }
 
-        private async Task<PatternViewModel> SavePattern(string title, List<string> roundTexts, int? patternId = null)
+        private async Task<PatternViewModel> SavePattern(string title, List<string> roundTexts, string? imagePath, int? patternId = null)
         {
             var viewModel = new PatternViewModel
             {
                 Title = title,
-                RoundTexts = roundTexts
+                RoundTexts = roundTexts,
+                ImagePath = imagePath
             };
 
             var userId = _userManager.GetUserId(User)
@@ -183,6 +205,17 @@ namespace CrochetPatternParser.Controllers
                 {
                     entity.Title = title;
                     
+                    // Update image path if new image was uploaded
+                    if (imagePath != null)
+                    {
+                        // Delete old image if exists
+                        if (!string.IsNullOrEmpty(entity.ImagePath))
+                        {
+                            DeleteImageFile(entity.ImagePath);
+                        }
+                        entity.ImagePath = imagePath;
+                    }
+                    
                     // Clear existing rounds and add new ones
                     entity.Rounds.Clear();
                     for (int i = 0; i < roundTexts.Count; i++)
@@ -195,6 +228,7 @@ namespace CrochetPatternParser.Controllers
                     }
                     
                     _db.Patterns.Update(entity);
+                    viewModel.ImagePath = entity.ImagePath;
                 }
             }
             else
@@ -214,7 +248,8 @@ namespace CrochetPatternParser.Controllers
                 {
                     Title = title,
                     UserId = userId,
-                    Rounds = rounds
+                    Rounds = rounds,
+                    ImagePath = imagePath
                 };
 
                 _db.Patterns.Add(entity);
@@ -223,6 +258,37 @@ namespace CrochetPatternParser.Controllers
             await _db.SaveChangesAsync();
 
             return viewModel;
+        }
+
+        private async Task<string> SaveImageFile(IFormFile imageFile)
+        {
+            // Create uploads directory if it doesn't exist
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "patterns");
+            Directory.CreateDirectory(uploadsFolder);
+
+            // Generate unique filename
+            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(imageFile.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            // Save file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await imageFile.CopyToAsync(fileStream);
+            }
+
+            // Return relative path for storing in database
+            return $"/uploads/patterns/{uniqueFileName}";
+        }
+
+        private void DeleteImageFile(string imagePath)
+        {
+            if (string.IsNullOrEmpty(imagePath)) return;
+
+            var fullPath = Path.Combine(_environment.WebRootPath, imagePath.TrimStart('/'));
+            if (System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
         }
     }
 }

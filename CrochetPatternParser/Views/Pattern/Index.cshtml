@@ -3,78 +3,126 @@
     ViewData["Title"] = "Crochet Pattern Validator";
 }
 
-<h2>Crochet Pattern Validator</h2>
-
-<form method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    @if (ViewBag.PatternId != null)
-    {
-        <input type="hidden" name="patternId" value="@ViewBag.PatternId" />
-    }
-    <input type="text" asp-for="Title" id="patternTitle" placeholder="Pattern Title" />
-    <br />
-
-    <div id="roundsContainer">
-        @if (Model?.RoundTexts != null && Model.RoundTexts.Count > 0)
-        {
-            @for (int i = 0; i < Model.RoundTexts.Count; i++)
-            {
-                <div class="round-input-group" data-round-index="@i">
-                    <label>Round @(i + 1)</label>
-                    <textarea name="RoundTexts[@i]" rows="1" cols="60" class="round-text">@Model.RoundTexts[i]</textarea>
-                    <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
-                    <br />
-                </div>
-            }
-        }
-        else
-        {
-            <div class="round-input-group" data-round-index="0">
-                <label>Round 1</label>
-                <textarea name="RoundTexts[0]" rows="1" cols="60" class="round-text"></textarea>
-                <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
-                <br />
-            </div>
-        }
+<div class="pattern-validator-container">
+    <div class="page-header">
+        <h2>🧶 Crochet Pattern Validator</h2>
+        <p class="subtitle">Create and validate your crochet patterns with ease</p>
     </div>
 
-    <button type="button" class="btn btn-secondary" onclick="addRound()">Add Round</button>
-    <br /><br />
+    <form method="post" class="section-container" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+        @if (ViewBag.PatternId != null)
+        {
+            <input type="hidden" name="patternId" value="@ViewBag.PatternId" />
+        }
+        @if (!string.IsNullOrEmpty(Model?.ImagePath))
+        {
+            <input type="hidden" asp-for="ImagePath" />
+        }
+        
+        <div class="section-group">
+            <label for="patternTitle" class="section-label">Pattern Title</label>
+            <input type="text" asp-for="Title" id="patternTitle" class="form-control styled-text-input" placeholder="Enter your pattern title..." />
+        </div>
 
-    <button type="submit" 
-            asp-action="Validate"
-            asp-controller="Pattern"
-            id="validateButton">
-        Validate
-    </button>
-    <button type="submit"
-            asp-action="Save"
-            asp-controller="Pattern"
-            id="saveButton">
-        Save
-    </button>
+        <div class="section-group">
+            <label for="patternImage" class="section-label">📸 Pattern Image (Optional)</label>
+            @if (!string.IsNullOrEmpty(Model?.ImagePath))
+            {
+                <div class="current-image-preview">
+                    <img src="@Model.ImagePath" alt="Current pattern image" />
+                    <p class="current-image-label">Current Image</p>
+                </div>
+            }
+            <input type="file" asp-for="ImageFile" id="patternImage" class="form-control image-upload-input" accept="image/*" onchange="previewImage(event)" />
+            <div id="imagePreview" class="image-preview" style="display: none;">
+                <img id="previewImg" alt="Image preview" />
+            </div>
+        </div>
+
+    <div class="section-group">
+        <label class="section-label">Pattern Rounds</label>
+        <div id="roundsContainer">
+            @if (Model?.RoundTexts != null && Model.RoundTexts.Count > 0)
+            {
+                @for (int i = 0; i < Model.RoundTexts.Count; i++)
+                {
+                    <div class="round-input-group" data-round-index="@i">
+                        <div class="round-header">
+                            <label class="round-label">Round @(i + 1)</label>
+                            <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                        </div>
+                        <textarea name="RoundTexts[@i]" rows="2" class="round-text form-control">@Model.RoundTexts[i]</textarea>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="round-input-group" data-round-index="0">
+                    <div class="round-header">
+                        <label class="round-label">Round 1</label>
+                        <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                    </div>
+                    <textarea name="RoundTexts[0]" rows="2" class="round-text form-control"></textarea>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="pattern-form-actions">
+        <button type="button" class="btn btn-add-round" onclick="addRound()">➕ Add Round</button>
+        
+        <div class="submit-buttons">
+            <button type="submit" 
+                    asp-action="Validate"
+                    asp-controller="Pattern"
+                    class="btn btn-validate"
+                    id="validateButton">
+                ✓ Validate Pattern
+            </button>
+            <button type="submit"
+                    asp-action="Save"
+                    asp-controller="Pattern"
+                    class="btn btn-save"
+                    id="saveButton">
+                💾 Save Pattern
+            </button>
+        </div>
+    </div>
 </form>
 
 @if (Model?.Rounds != null && Model.Rounds.Count > 0)
 {
-    <ul>
-    @foreach (var round in Model.Rounds)
-    {
-        if (!string.IsNullOrEmpty(round.Error))
+    <div class="validation-results">
+        <h3 class="results-title">Validation Results</h3>
+        <div class="results-list">
+        @foreach (var round in Model.Rounds)
         {
-            <li style="color:red">
-                ❌ Round @round.RoundIndex: @round.Error
-            </li>
+            if (!string.IsNullOrEmpty(round.Error))
+            {
+                <div class="result-item result-error">
+                    <span class="result-icon">❌</span>
+                    <div class="result-content">
+                        <strong>Round @round.RoundIndex</strong>
+                        <p>@round.Error</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="result-item result-success">
+                    <span class="result-icon">✅</span>
+                    <div class="result-content">
+                        <strong>Round @round.RoundIndex</strong>
+                        <p>@round.StitchCount stitches</p>
+                    </div>
+                </div>
+            }
         }
-        else
-        {
-            <li style="color:green">
-                ✅ Round @round.RoundIndex: @round.StitchCount stitches
-            </li>
-        }
-    }
-    </ul>
+        </div>
+    </div>
 }
+</div>
 
 
 @section Scripts {
@@ -90,10 +138,11 @@
             const roundDiv = document.createElement("div");
             roundDiv.className = "round-input-group";
             roundDiv.innerHTML = `
-                <label>Round ${roundCounter + 1}</label>
-                <textarea name="RoundTexts[${roundCounter}]" rows="1" cols="60" class="round-text"></textarea>
-                <button type="button" class="btn btn-danger btn-sm delete-round" onclick="deleteRound(this)">Delete</button>
-                <br />
+                <div class="round-header">
+                    <label class="round-label">Round ${roundCounter + 1}</label>
+                    <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                </div>
+                <textarea name="RoundTexts[${roundCounter}]" rows="2" class="round-text form-control"></textarea>
             `;
             container.appendChild(roundDiv);
             roundCounter++;
@@ -108,7 +157,7 @@
 
         function reindexRounds() {
             document.querySelectorAll('.round-input-group').forEach((round, index) => {
-                round.querySelector('label').textContent = `Round ${index + 1}`;
+                round.querySelector('.round-label').textContent = `Round ${index + 1}`;
                 round.querySelector('textarea').name = `RoundTexts[${index}]`;
             });
             roundCounter = document.querySelectorAll('.round-input-group').length;
@@ -196,6 +245,28 @@
                     e.returnValue = '';
                 }
             });
+        }
+
+        // Image preview
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    const previewImg = document.getElementById('previewImg');
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // Hide current image if showing new one
+                    const currentImage = document.querySelector('.current-image-preview');
+                    if (currentImage) {
+                        currentImage.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+                isDirty = true;
+            }
         }
 
         // Initialize all handlers

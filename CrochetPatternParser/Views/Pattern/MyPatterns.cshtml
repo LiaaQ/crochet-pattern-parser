@@ -1,23 +1,54 @@
 @model List<CrochetPatternParser.Data.PatternEntity>
 
-<h2>My Saved Patterns</h2>
+<div class="my-patterns-container">
+    <div class="page-header">
+        <h2>📚 My Saved Patterns</h2>
+        <p class="subtitle">Manage and edit your crochet patterns</p>
+    </div>
 
-@if (!Model.Any())
-{
-    <p>You have no saved patterns.</p>
-}
-else
-{
-    <ul>
-        @foreach (var pattern in Model)
-        {
-            <li>
-                <strong>Saved:</strong> @pattern.CreatedAt.ToLocalTime()<br />
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🧶</div>
+            <h3>No Patterns Yet</h3>
+            <p>You haven't saved any patterns. Start creating your first crochet pattern!</p>
+            <a asp-action="Index" class="btn btn-create-pattern">
+                ➕ Create New Pattern
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="patterns-grid">
+            @foreach (var pattern in Model)
+            {
+                <div class="pattern-card">
+                    @if (!string.IsNullOrEmpty(pattern.ImagePath))
+                    {
+                        <div class="pattern-card-image">
+                            <img src="@pattern.ImagePath" alt="@pattern.Title" />
+                        </div>
+                    }
+                    <div class="pattern-card-header">
+                        <h3 class="pattern-title">@(string.IsNullOrEmpty(pattern.Title) ? "Untitled Pattern" : pattern.Title)</h3>
+                        <span class="pattern-date">
+                            🕐 @pattern.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")
+                        </span>
+                    </div>
+                    <div class="pattern-card-body">
+                        <div class="pattern-info">
+                            <span class="info-label">Created:</span>
+                            <span class="info-value">@pattern.CreatedAt.ToLocalTime().ToString("MMMM dd, yyyy h:mm tt")</span>
+                        </div>
+                    </div>
+                    <div class="pattern-card-footer">
+                        <a asp-action="Edit" asp-route-id="@pattern.Id" class="btn btn-edit-pattern">
+                            ✏️ Edit Pattern
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
 
-                <strong>Title:</strong> @pattern.Title<br />
-
-                <a asp-action="Edit" asp-route-id="@pattern.Id">Edit</a>
-            </li>
-        }
-    </ul>
-}

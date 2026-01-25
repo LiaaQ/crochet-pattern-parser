@@ -1,0 +1,179 @@
+:root {
+  /* Pink Theme - Soft & Muted */
+  --bg-gradient-start: #fef9fb;
+  --bg-gradient-mid: #fdf4f7;
+  --bg-gradient-end: #fceef3;
+  --header-gradient-start: #d492a7;
+  --header-gradient-end: #c47d94;
+  --header-shadow: rgba(196, 125, 148, 0.35);
+  --primary-color: #c47d94;
+  --primary-light: #d9a8b8;
+  --primary-lighter: #eac9d4;
+  --card-bg-start: #ffffff;
+  --card-bg-end: #fefbfc;
+  --card-border: #f5e4eb;
+  --card-shadow: rgba(234, 201, 212, 0.3);
+  --input-bg: #fffcfd;
+  --input-border: #f0d4e0;
+  --input-focus-border: var(--primary-light);
+  --round-bg-start: var(--bg-gradient-start);
+  --round-bg-end: var(--bg-gradient-mid);
+  --btn-success-start: #89b5a0;
+  --btn-success-end: #6fa488;
+  --btn-success-shadow: rgba(111, 164, 136, 0.35);
+  --success-bg-start: #f8fcf9;
+  --success-bg-end: #f0f9f4;
+  --success-border: var(--btn-success-start);
+  --error-bg-start: var(--bg-gradient-start);
+  --error-bg-end: var(--bg-gradient-mid);
+  --error-border: var(--primary-light);
+  --card-header-start: #b8869d;
+  --card-header-end: #a6758c;
+  --theme-icon: '💕';
+  --theme-btn-bg-start: var(--primary-light);
+  --theme-btn-bg-end: var(--primary-color);
+}
+
+.theme-green {
+  /* Green Theme - Soft & Muted */
+  --bg-gradient-start: #f8fcf9;
+  --bg-gradient-mid: #f0f9f4;
+  --bg-gradient-end: #e8f5ee;
+  --header-gradient-start: #5a8c6f;
+  --header-gradient-end: #4a7c5f;
+  --header-shadow: rgba(90, 140, 111, 0.35);
+  --primary-color: #5a8c6f;
+  --primary-light: #89b5a0;
+  --primary-lighter: #b8d4c6;
+  --card-bg-start: #ffffff;
+  --card-bg-end: #fafcfb;
+  --card-border: #d9ebe0;
+  --card-shadow: rgba(184, 212, 198, 0.3);
+  --input-bg: #fcfefd;
+  --input-border: #c9dfd3;
+  --input-focus-border: var(--primary-light);
+  --round-bg-start: var(--bg-gradient-start);
+  --round-bg-end: var(--bg-gradient-mid);
+  --btn-success-start: var(--primary-color);
+  --btn-success-end: var(--header-gradient-end);
+  --btn-success-shadow: var(--header-shadow);
+  --success-bg-start: var(--bg-gradient-start);
+  --success-bg-end: var(--bg-gradient-mid);
+  --success-border: #7db096;
+  --error-bg-start: #fef9f8;
+  --error-bg-end: #fdf2f0;
+  --error-border: #e5b5af;
+  --card-header-start: var(--success-border);
+  --card-header-end: #6a9d85;
+  --theme-icon: '🌿';
+  --theme-btn-bg-start: var(--success-border);
+  --theme-btn-bg-end: var(--primary-color);
+}
+
+.theme-blue {
+  /* Blue Theme - Soft & Calm Pastel */
+  --bg-gradient-start: #f8fbff;
+  --bg-gradient-mid: #f0f6ff;
+  --bg-gradient-end: #e8f2ff;
+  --header-gradient-start: #93b5e1;
+  --header-gradient-end: #7ba3d6;
+  --header-shadow: rgba(123, 163, 214, 0.35);
+  --primary-color: #7ba3d6;
+  --primary-light: #a5c4e6;
+  --primary-lighter: #c8dbf0;
+  --card-bg-start: #ffffff;
+  --card-bg-end: #fafcff;
+  --card-border: #e3edf9;
+  --card-shadow: rgba(200, 219, 240, 0.3);
+  --input-bg: #fcfdff;
+  --input-border: #d6e4f5;
+  --input-focus-border: var(--primary-light);
+  --round-bg-start: var(--bg-gradient-start);
+  --round-bg-end: var(--bg-gradient-mid);
+  --btn-success-start: #7db9b0;
+  --btn-success-end: #69a89f;
+  --btn-success-shadow: rgba(105, 168, 159, 0.35);
+  --success-bg-start: #f5fdfb;
+  --success-bg-end: #e8f8f4;
+  --success-border: var(--btn-success-start);
+  --error-bg-start: #fffbfb;
+  --error-bg-end: #fff3f5;
+  --error-border: #e8b8c4;
+  --card-header-start: var(--header-gradient-start);
+  --card-header-end: var(--primary-color);
+  --theme-icon: '🌊';
+  --theme-btn-bg-start: var(--primary-light);
+  --theme-btn-bg-end: var(--primary-color);
+}
+
+.theme-purple {
+  /* Purple Theme - Soft Lavender Pastel */
+  --bg-gradient-start: #fbf9ff;
+  --bg-gradient-mid: #f6f2ff;
+  --bg-gradient-end: #f0ebff;
+  --header-gradient-start: #b09dd6;
+  --header-gradient-end: #9a86c9;
+  --header-shadow: rgba(154, 134, 201, 0.35);
+  --primary-color: #9a86c9;
+  --primary-light: #bfafe3;
+  --primary-lighter: #d9d0ed;
+  --card-bg-start: #ffffff;
+  --card-bg-end: #fbfaff;
+  --card-border: #ebe5f7;
+  --card-shadow: rgba(217, 208, 237, 0.3);
+  --input-bg: #fdfcff;
+  --input-border: #e2dbf2;
+  --input-focus-border: var(--primary-light);
+  --round-bg-start: var(--bg-gradient-start);
+  --round-bg-end: var(--bg-gradient-mid);
+  --btn-success-start: #8bb5a4;
+  --btn-success-end: #77a391;
+  --btn-success-shadow: rgba(119, 163, 145, 0.35);
+  --success-bg-start: #f6fdfb;
+  --success-bg-end: #ebf7f3;
+  --success-border: var(--btn-success-start);
+  --error-bg-start: #fef9fc;
+  --error-bg-end: #fbf2f8;
+  --error-border: #e3c1db;
+  --card-header-start: var(--header-gradient-start);
+  --card-header-end: var(--primary-color);
+  --theme-icon: '🍇';
+  --theme-btn-bg-start: var(--primary-light);
+  --theme-btn-bg-end: var(--primary-color);
+}
+
+.theme-yellow {
+  /* Yellow Theme - Soft Cream Pastel */
+  --bg-gradient-start: #fffcf7;
+  --bg-gradient-mid: #fff8ec;
+  --bg-gradient-end: #fff3e0;
+  --header-gradient-start: #e8c991;
+  --header-gradient-end: #ddb976;
+  --header-shadow: rgba(221, 185, 118, 0.35);
+  --primary-color: #ddb976;
+  --primary-light: #ead5a9;
+  --primary-lighter: #f2e6cb;
+  --card-bg-start: #ffffff;
+  --card-bg-end: #fffdf9;
+  --card-border: #f5ecd9;
+  --card-shadow: rgba(242, 230, 203, 0.3);
+  --input-bg: #fffef9;
+  --input-border: #f0e4c8;
+  --input-focus-border: var(--primary-light);
+  --round-bg-start: var(--bg-gradient-start);
+  --round-bg-end: var(--bg-gradient-mid);
+  --btn-success-start: #9bb991;
+  --btn-success-end: #89a87e;
+  --btn-success-shadow: rgba(137, 168, 126, 0.35);
+  --success-bg-start: #f9fef7;
+  --success-bg-end: #f1f9ed;
+  --success-border: var(--btn-success-start);
+  --error-bg-start: #fffaf7;
+  --error-bg-end: #fff4ed;
+  --error-border: #e8c4ab;
+  --card-header-start: var(--header-gradient-start);
+  --card-header-end: var(--primary-color);
+  --theme-icon: '☀️';
+  --theme-btn-bg-start: var(--primary-light);
+  --theme-btn-bg-end: var(--primary-color);
+}

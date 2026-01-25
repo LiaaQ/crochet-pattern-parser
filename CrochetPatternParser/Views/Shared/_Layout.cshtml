@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - CrochetPatternParser</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/themes.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CrochetPatternParser.styles.css" asp-append-version="true" />
 </head>
@@ -61,6 +62,25 @@
             &copy; 2026 - CrochetPatternParser - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+    
+    <div class="theme-switcher">
+        <button class="theme-btn active" data-theme="pink" onclick="setTheme('pink')" title="Pink Theme">
+            💕
+        </button>
+        <button class="theme-btn" data-theme="green" onclick="setTheme('green')" title="Green Theme">
+            🌿
+        </button>
+        <button class="theme-btn" data-theme="blue" onclick="setTheme('blue')" title="Blue Theme">
+            🌊
+        </button>
+        <button class="theme-btn" data-theme="purple" onclick="setTheme('purple')" title="Purple Theme">
+            🍇
+        </button>
+        <button class="theme-btn" data-theme="yellow" onclick="setTheme('yellow')" title="Yellow Theme">
+            ☀️
+        </button>
+    </div>
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

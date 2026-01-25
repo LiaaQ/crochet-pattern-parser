@@ -1,25 +1,35 @@
 @model CrochetPatternParser.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
 
-<h2>Login</h2>
+<div class="auth-card narrow">
+    <div class="page-header">
+        <h2>Login</h2>
+    </div>
 
-<form asp-action="Login" method="post">
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" />
-    </div>
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" />
-    </div>
-    <div>
-        <input asp-for="RememberMe" type="checkbox" />
-        <label asp-for="RememberMe"></label>
-    </div>
-    <button type="submit">Login</button>
-</form>
+    <form method="post" asp-action="Login">
+        <div class="section-group">
+            <label for="Email" class="section-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+
+        <div class="section-group">
+            <label for="Password" class="section-label">Password</label>
+            <input asp-for="Password" type="password" class="form-control" />
+        </div>
+
+        <div class="section-group form-check">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
+        </div>
+
+        <button type="submit" class="btn-save">Login</button>
+    </form>
+
 @if (ViewData.ModelState.ErrorCount > 0)
 {
-    <div>
+    <div class ="validation-summary-errors">
         <ul>
             @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
             {

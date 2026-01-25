@@ -1,30 +1,33 @@
 @model CrochetPatternParser.Models.RegisterViewModel
 
-<h2>Register</h2>
+<div class="auth-card narrow">
+    <div class="page-header">
+        <h2>Register</h2>
+    </div>
 
-<form asp-action="Register" method="post">
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" />
-    </div>
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" />
-    </div>
-    <div>
-        <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" type="password" />
-    </div>
-    <button type="submit">Register</button>
-</form>
-@if (ViewData.ModelState.ErrorCount > 0)
-{
-    <div>
-        <ul>
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-            {
-                <li>@error.ErrorMessage</li>
-            }
-        </ul>
-    </div>
-}
+    <form method="post" asp-action="Register">
+        <div class="section-group">
+            <label for="Email" class="section-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <div class="section-group">
+            <label for="Password" class="section-label">Password</label>
+            <input asp-for="Password" type="password" class="form-control" />
+        </div>
+        <div class="section-group">
+            <label for="ConfirmPassword" class="section-label">Confirm Password</label>
+            <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        </div>
+        <button type="submit" class="btn-save">Register</button>
+    </form>
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="section-group">
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }

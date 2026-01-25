@@ -14,5 +14,7 @@ namespace CrochetPatternParser.Models
         public List<string> RoundTexts { get; set; } = new();
         public List<RoundViewModel> Rounds { get; set; } = new();
         public bool Saved { get; set; } = false;
+        public string? ImagePath { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }
