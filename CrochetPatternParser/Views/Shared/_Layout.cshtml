@@ -37,13 +37,13 @@
                             {
                                 <span class="nav-link">Hello, @User.Identity.Name!</span>
                                 <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
-                                    <button type="submit" class="btn btn-link nav-link">Logout</button>
+                                    <button type="submit" class="btn-save">Logout</button>
                                 </form>
                             }
                             else
                             {
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+                                <a class="btn-save" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="btn-save" asp-controller="Account" asp-action="Register">Register</a>
                             }
                         </li>
                     </ul>
