@@ -18,7 +18,14 @@
             <label for="ConfirmPassword" class="section-label">Confirm Password</label>
             <input asp-for="ConfirmPassword" type="password" class="form-control" />
         </div>
-        <button type="submit" class="btn-save">Register</button>
+
+        <div class="section-group">
+            <button type="submit" class="btn-save">Register</button>
+        </div>
+
+        <div class="section-group">
+            <a asp-controller="Account" asp-action="Login" class=""> Already have an account? Login here.</a>
+        </div>
     </form>
     @if (ViewData.ModelState.ErrorCount > 0)
     {

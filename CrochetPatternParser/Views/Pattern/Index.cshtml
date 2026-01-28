@@ -87,6 +87,12 @@
                     id="saveButton">
                 💾 Save Pattern
             </button>
+            <button type="button"
+                    class="btn btn-save"
+                    id="previewButton"
+                    onclick="togglePreview()">
+                👁️ Preview Pattern
+            </button>
         </div>
     </div>
 </form>
@@ -122,6 +128,40 @@
         </div>
     </div>
 }
+
+<div id="patternPreview" class="pattern-preview-container" style="display: none;">
+    <div class="section-container">
+        <h3 class="results-title">📖 Pattern Preview</h3>
+        <div id="previewContent" class="preview-content">
+            @if (Model?.Rounds != null && Model.Rounds.Count > 0)
+            {
+                <div class="preview-header">
+                    <h2>@(string.IsNullOrEmpty(Model.Title) ? "Untitled Pattern" : Model.Title)</h2>
+                    <p class="preview-date">Created: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                </div>
+                <div class="preview-rounds">
+                    @for (int i = 0; i < Model.Rounds.Count; i++)
+                    {
+                        var round = Model.Rounds[i];
+                        var roundText = i < Model.RoundTexts.Count ? Model.RoundTexts[i] : "";
+                        
+                        <div class="preview-round">
+                            <div class="preview-round-header">
+                                <h3>Round @(i + 1)</h3>
+                                <span class="preview-stitch-count">@round.StitchCount stitches</span>
+                            </div>
+                            <p class="preview-round-text">@roundText</p>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="preview-empty">No rounds added yet. Add a round to see the preview.</p>
+            }
+        </div>
+    </div>
+</div>
 </div>
 
 
@@ -267,6 +307,13 @@
                 reader.readAsDataURL(file);
                 isDirty = true;
             }
+        }
+
+        // Pattern Preview Toggle
+        function togglePreview() {
+            const previewContainer = document.getElementById('patternPreview');
+            const isVisible = previewContainer.style.display !== 'none';
+            previewContainer.style.display = isVisible ? 'none' : 'block';
         }
 
         // Initialize all handlers

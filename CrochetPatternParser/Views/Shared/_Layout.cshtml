@@ -7,12 +7,19 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/themes.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/buttons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/validator.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/my-patterns.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme-switcher.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CrochetPatternParser.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-custom">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Crochet Pattern Validator</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -22,21 +29,21 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Pattern" asp-action="Index">Pattern</a>
+                            <a class="nav-link" asp-area="" asp-controller="Pattern" asp-action="Index">Pattern</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Pattern" asp-action="MyPatterns">My Patterns</a>
+                            <a class="nav-link" asp-controller="Pattern" asp-action="MyPatterns">My Patterns</a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
+                    <ul class="navbar-nav ms-auto navbar-auth">
+                        <li class="nav-item nav-auth-item">
                             @if (User.Identity?.IsAuthenticated ?? false)
                             {
-                                <span class="nav-link">Hello, @User.Identity.Name!</span>
-                                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+                                <span class="nav-username">Hello, @User.Identity.Name!</span>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="logout-form">
                                     <button type="submit" class="btn-save">Logout</button>
                                 </form>
                             }
@@ -57,9 +64,12 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer-custom">
         <div class="container">
-            &copy; 2026 - CrochetPatternParser - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="footer-content">
+                <p>&copy; 2026 - Crochet Pattern Validator</p>
+                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="footer-link">Privacy</a>
+            </div>
         </div>
     </footer>
     

@@ -6,7 +6,18 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        var connectionString = builder.Configuration.GetConnectionString("Sqlite");
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+        options.UseSqlServer(connectionString);
+    }
+});
 
 builder.Services
     .AddIdentity<ApplicationUserEntity, IdentityRole>(options =>

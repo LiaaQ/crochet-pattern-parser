@@ -24,7 +24,13 @@
             <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
         </div>
 
-        <button type="submit" class="btn-save">Login</button>
+        <div class="section-group">
+            <button type="submit" class="btn-save">Login</button>
+        </div>
+
+        <div class="section-group">
+            <a asp-controller="Account" asp-action="Register" class=""> Don't have an account yet? Register here.</a>
+        </div>
     </form>
 
 @if (ViewData.ModelState.ErrorCount > 0)
