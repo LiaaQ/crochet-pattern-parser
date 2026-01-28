@@ -5,7 +5,7 @@
 namespace CrochetPatternParser.Migrations
 {
     /// <inheritdoc />
-    public partial class FixIdentityNamespace : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
