@@ -6,8 +6,18 @@
 <div class="pattern-validator-container">
     <div class="page-header">
         <h2>🧶 Crochet Pattern Validator</h2>
-        <p class="subtitle">Create and validate your crochet patterns with ease</p>
+        <p class="subtitle">No more math ain't mathing moments!</p>
     </div>
+
+    @if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"]?.ToString() == "True")
+    {
+        <div class="alert alert-info" role="alert">
+            <strong>Welcome back!</strong> Your pattern has been restored. You can now save it.
+            @{
+                TempData.Remove("FromSaveAttempt");
+            }
+        </div>
+    }
 
     <form method="post" class="section-container" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>

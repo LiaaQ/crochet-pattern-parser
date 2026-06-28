@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CrochetPatternParser.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260128223030_InitialCreate")]
+    [Migration("20260129200053_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -30,6 +30,17 @@ namespace CrochetPatternParser.Controllers
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                
+                // If user was redirected from a save attempt, redirect to pattern page
+                if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"].ToString() == "True")
+                {
+                    TempData["PatternTitle"] = TempData["PatternTitle"];
+                    TempData["PatternRoundTexts"] = TempData["PatternRoundTexts"];
+                    TempData["PatternImagePath"] = TempData["PatternImagePath"];
+                    TempData["FromSaveAttempt"] = TempData["FromSaveAttempt"];
+                    return RedirectToAction("Index", "Pattern");
+                }
+                
                 return RedirectToAction("Index", "Pattern");
             }
 
@@ -48,7 +59,20 @@ namespace CrochetPatternParser.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-            if (result.Succeeded) return RedirectToAction("Index", "Pattern");
+            if (result.Succeeded)
+            {
+                // If user was redirected from a save attempt, redirect to pattern page
+                if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"].ToString() == "True")
+                {
+                    TempData["PatternTitle"] = TempData["PatternTitle"];
+                    TempData["PatternRoundTexts"] = TempData["PatternRoundTexts"];
+                    TempData["PatternImagePath"] = TempData["PatternImagePath"];
+                    TempData["FromSaveAttempt"] = TempData["FromSaveAttempt"];
+                    return RedirectToAction("Index", "Pattern");
+                }
+                
+                return RedirectToAction("Index", "Pattern");
+            }
 
             ModelState.AddModelError("", "Invalid login");
             return View(model);

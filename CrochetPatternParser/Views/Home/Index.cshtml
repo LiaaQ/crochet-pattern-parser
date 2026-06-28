@@ -1,9 +1,30 @@
-﻿@{
+﻿@* Add Quicksand font for Home only *@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    .home-page, .home-page p, .home-page li, .home-page a, .home-page strong {
+        font-family: 'Quicksand', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.08rem;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+    }
+</style>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="home-page">
-    <h1>Welcome to the Crochet Pattern Parser!</h1>
-    <p>This application allows you to parse and manage your crochet patterns with ease.</p>
-    <a href="/Account/Register" class="btn-primary">Get Started</a>
+    <div class="page-header">
+        <h1>Welcome to the Crochet Pattern Validator!</h1>
+    </div>
+    <p>
+        This tool is designed to help you validate your crochet patterns. No more math errors and inconsistent round counts!
+    </p>
+    </div>
+
+    <a href="/Account/Register" class="btn btn-primary">
+        Get Started
+    </a>
 </div>
