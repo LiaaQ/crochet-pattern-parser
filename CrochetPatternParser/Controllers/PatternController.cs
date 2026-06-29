@@ -40,9 +40,25 @@ namespace CrochetPatternParser.Controllers
         [HttpPost]
         public async Task<IActionResult> Validate(PatternViewModel model, int? patternId)
         {
-            var viewModel = ValidatePattern(model.Sections ?? new List<SectionViewModel>());
+            var viewModel = new PatternViewModel();
+
+            var sectionsToValidate = model.Sections.Count > 0
+                ? model.Sections
+                : new List<SectionViewModel>
+                {
+                    new SectionViewModel
+                    {
+                        RoundTexts = GetFilteredRoundTexts(model.Sections.SelectMany(s => s.RoundTexts).ToList())
+                    }
+                };
+
+            for (int i = 0; i < sectionsToValidate.Count; i++)
+            {
+                var section = sectionsToValidate[i];
+                viewModel.Sections.Add(BuildValidatedSectionViewModel(section.RoundTexts, i));
+            }
+
             viewModel.Title = model.Title;
-            viewModel.RoundTexts = model.RoundTexts ?? new List<string>();
 
             viewModel.ImagePath = await GetImagePathAsync(model);
 
@@ -54,18 +70,19 @@ namespace CrochetPatternParser.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ValidateSection(SectionViewModel model, int? patternId)
+        public async Task<IActionResult> ValidateSection(SectionViewModel section, int sectionIndex, int? patternId)
         {
-            var viewModel = ValidatePattern(model.RoundTexts ?? new List<string>());
-            viewModel.Title = model.Title;
-            viewModel.RoundTexts = model.RoundTexts ?? new List<string>();
-
-            viewModel.ImagePath = await GetImagePathAsync(model);
-
-            if (patternId.HasValue)
+            var viewModel = new PatternViewModel();
+            var roundTexts = section.RoundTexts ?? new List<string>();
+            var sectionViewModel = new SectionViewModel
             {
-                ViewBag.PatternId = patternId;
-            }
+                SectionIndex = sectionIndex,
+                RoundTexts = roundTexts
+            };
+
+            var validatedSection = BuildValidatedSectionViewModel(roundTexts, sectionIndex);
+            viewModel.Sections.Add(validatedSection);
+                
             return View("Index", viewModel);
         }
 
@@ -80,17 +97,17 @@ namespace CrochetPatternParser.Controllers
                 return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Index", "Pattern") });
             }
 
-            var roundTexts = GetFilteredRoundTexts(model.RoundTexts);
+            var sections = model.Sections ?? new List<SectionViewModel>();
+            var roundTexts = GetFilteredRoundTexts(sections.SelectMany(s => s.RoundTexts).ToList());
 
             if (roundTexts.Count == 0)
             {
-                ModelState.AddModelError("", "Cannot save pattern with no rounds. Please add at least one round.");
-                model.RoundTexts = model.RoundTexts ?? new List<string>();
+                model.Sections = model.Sections ?? new List<SectionViewModel>();
                 return View("Index", model);
             }
 
-            var viewModel = await SavePattern(model.Title, roundTexts, imagePath, patternId);
-            viewModel.RoundTexts = roundTexts;
+            var viewModel = await SavePattern(model.Title, sections, imagePath, patternId);
+            viewModel.Sections = sections;
 
             return View("Index", viewModel);
         }
@@ -147,59 +164,55 @@ namespace CrochetPatternParser.Controllers
             return View("Index", viewModel);
         }
 
-        private PatternViewModel ValidatePattern(List<SectionViewModel> sections)
+        
+
+        SectionViewModel BuildValidatedSectionViewModel(List<string> roundTexts, int sectionIndex)
         {
-            var viewModel = new PatternViewModel();
-            for (int i = 0; i < sections.Count; i++)
+            var sectionViewModel = new SectionViewModel
             {
-                var section = sections[i];
-                var roundTexts = section.RoundTexts ?? new List<string>();
-                var sectionViewModel = new SectionViewModel
+                SectionIndex = sectionIndex,
+                RoundTexts = roundTexts
+            };
+
+            // Concatenate rounds for processing
+            var patternText = string.Join(";", roundTexts);
+
+            try
+            {
+                // Tokenize
+                var tokenizer = new Tokenizer(patternText);
+                var tokens = tokenizer.Tokenize();
+
+                // Parse
+                var parser = new Parser(tokens);
+                var ast = parser.Parse();
+
+                // Validate pattern
+                var validator = new PatternValidator();
+                var result = validator.Validate(ast);
+
+                // Map results to ViewModel
+                foreach (var r in result.Rounds)
                 {
-                    SectionIndex = i,
-                    RoundTexts = roundTexts
-                };
-
-                // Concatenate rounds for processing
-                var patternText = string.Join(";", roundTexts);
-
-                try
-                {
-                    // Tokenize
-                    var tokenizer = new Tokenizer(patternText);
-                    var tokens = tokenizer.Tokenize();
-
-                    // Parse
-                    var parser = new Parser(tokens);
-                    var ast = parser.Parse();
-
-                    // Validate pattern
-                    var validator = new PatternValidator();
-                    var result = validator.Validate(ast);
-
-                    // Map results to ViewModel
-                    foreach (var r in result.Rounds)
+                    sectionViewModel.Rounds.Add(new RoundViewModel
                     {
-                        section.Rounds.Add(new RoundViewModel
-                        {
-                            RoundIndex = r.RoundIndex,
-                            StitchCount = r.StitchCount,
-                            ExpectedStitchConsumed = r.ExpectedStitchConsumed,
-                            Error = r.Error
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    section.Rounds.Add(new RoundViewModel
-                    {
-                        RoundIndex = 0,
-                        Error = ex.Message
+                        RoundIndex = r.RoundIndex,
+                        StitchCount = r.StitchCount,
+                        ExpectedStitchConsumed = r.ExpectedStitchConsumed,
+                        Error = r.Error
                     });
                 }
-                }
+            }
+            catch (Exception ex)
+            {
+                sectionViewModel.Rounds.Add(new RoundViewModel
+                {
+                    RoundIndex = 0,
+                    Error = ex.Message
+                });
+            }
 
-            return viewModel;
+            return sectionViewModel;
         }
 
         private async Task<PatternViewModel> SavePattern(string title, List<SectionViewModel> sections, string? imagePath, int? patternId = null)
@@ -265,24 +278,32 @@ namespace CrochetPatternParser.Controllers
             }
             else
             {
-                // Create new pattern
-                var rounds = new List<RoundEntity>();
-                for (int i = 0; i < roundTexts.Count; i++)
-                {
-                    rounds.Add(new RoundEntity
-                    {
-                        RoundNumber = i + 1,
-                        Text = roundTexts[i]
-                    });
-                }
-
                 var entity = new PatternEntity
                 {
                     Title = title,
                     UserId = userId,
-                    Rounds = rounds,
                     ImagePath = imagePath
                 };
+
+                for (int i = 0; i < sections.Count; i++)
+                {
+                    var sectionViewModel = sections[i];
+                    var sectionEntity = new SectionEntity
+                    {
+                        SectionNumber = i + 1
+                    };
+
+                    for (int j = 0; j < sectionViewModel.RoundTexts.Count; j++)
+                    {
+                        sectionEntity.Rounds.Add(new RoundEntity
+                        {
+                            RoundNumber = j + 1,
+                            Text = sectionViewModel.RoundTexts[j]
+                        });
+                    }
+
+                    entity.Sections.Add(sectionEntity);
+                }
 
                 _db.Patterns.Add(entity);
             }
@@ -339,7 +360,7 @@ namespace CrochetPatternParser.Controllers
             var roundTextsJson = TempData["PatternRoundTexts"]?.ToString();
             if (!string.IsNullOrEmpty(roundTextsJson))
             {
-                viewModel.RoundTexts = JsonSerializer.Deserialize<List<string>>(roundTextsJson) ?? new List<string>();
+                viewModel.Sections = JsonSerializer.Deserialize<List<SectionViewModel>>(roundTextsJson) ?? new List<SectionViewModel>();
             }
 
             TempData.Keep("PatternTitle");
@@ -352,7 +373,7 @@ namespace CrochetPatternParser.Controllers
         private void StorePatternInTempData(PatternViewModel model, string? imagePath)
         {
             TempData["PatternTitle"] = model.Title;
-            TempData["PatternRoundTexts"] = JsonSerializer.Serialize(model.RoundTexts ?? new List<string>());
+            TempData["PatternRoundTexts"] = JsonSerializer.Serialize(model.Sections ?? new List<SectionViewModel>());
             TempData["PatternImagePath"] = imagePath;
             TempData["FromSaveAttempt"] = true;
         }

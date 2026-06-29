@@ -53,17 +53,20 @@
     <div class="section-group">
         <label class="section-label">Pattern Rounds</label>
         <div id="roundsContainer">
-            @if (Model?.RoundTexts != null && Model.RoundTexts.Count > 0)
+            @if (Model?.Sections != null && Model.Sections.Count > 0)
             {
-                @for (int i = 0; i < Model.RoundTexts.Count; i++)
+                @for (int i = 0; i < Model.Sections.Count; i++)
                 {
-                    <div class="round-input-group" data-round-index="@i">
-                        <div class="round-header">
-                            <label class="round-label">Round @(i + 1)</label>
-                            <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                    @for (int j = 0; j < Model.Sections[i].RoundTexts.Count; j++)
+                    {
+                        <div class="round-input-group" data-round-index="@j">
+                            <div class="round-header">
+                                <label class="round-label">Round @(j + 1)</label>
+                                <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                            </div>
+                            <textarea name="Sections[@i].RoundTexts[@j]" rows="2" class="round-text form-control">@Model.Sections[i].RoundTexts[j]</textarea>
                         </div>
-                        <textarea name="RoundTexts[@i]" rows="2" class="round-text form-control">@Model.RoundTexts[i]</textarea>
-                    </div>
+                    }
                 }
             }
             else
@@ -73,7 +76,7 @@
                         <label class="round-label">Round 1</label>
                         <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
                     </div>
-                    <textarea name="RoundTexts[0]" rows="2" class="round-text form-control"></textarea>
+                    <textarea name="Sections[0].RoundTexts[0]" rows="2" class="round-text form-control"></textarea>
                 </div>
             }
         </div>
@@ -107,32 +110,35 @@
     </div>
 </form>
 
-@if (Model?.Rounds != null && Model.Rounds.Count > 0)
+@if (Model?.Sections != null && Model.Sections.Count > 0)
 {
     <div class="validation-results">
         <h3 class="results-title">Validation Results</h3>
         <div class="results-list">
-        @foreach (var round in Model.Rounds)
+        @foreach (var section in Model.Sections)
         {
-            if (!string.IsNullOrEmpty(round.Error))
+            @foreach (var round in section.Rounds)
             {
-                <div class="result-item result-error">
-                    <span class="result-icon">❌</span>
-                    <div class="result-content">
-                        <strong>Round @round.RoundIndex</strong>
-                        <p>@round.Error</p>
+                if (!string.IsNullOrEmpty(round.Error))
+                {
+                    <div class="result-item result-error">
+                        <span class="result-icon">❌</span>
+                        <div class="result-content">
+                            <strong>Round @round.RoundIndex</strong>
+                            <p>@round.Error</p>
+                        </div>
                     </div>
-                </div>
-            }
-            else
-            {
-                <div class="result-item result-success">
-                    <span class="result-icon">✅</span>
-                    <div class="result-content">
-                        <strong>Round @round.RoundIndex</strong>
-                        <p>@round.StitchCount stitches</p>
+                }
+                else
+                {
+                    <div class="result-item result-success">
+                        <span class="result-icon">✅</span>
+                        <div class="result-content">
+                            <strong>Round @round.RoundIndex</strong>
+                            <p>@round.StitchCount stitches</p>
+                        </div>
                     </div>
-                </div>
+                }
             }
         }
         </div>
@@ -143,25 +149,29 @@
     <div class="section-container">
         <h3 class="results-title">📖 Pattern Preview</h3>
         <div id="previewContent" class="preview-content">
-            @if (Model?.Rounds != null && Model.Rounds.Count > 0)
+            @if (Model?.Sections != null && Model.Sections.Count > 0)
             {
                 <div class="preview-header">
                     <h2>@(string.IsNullOrEmpty(Model.Title) ? "Untitled Pattern" : Model.Title)</h2>
                     <p class="preview-date">Created: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
                 </div>
                 <div class="preview-rounds">
-                    @for (int i = 0; i < Model.Rounds.Count; i++)
+                    @for (int i = 0; i < Model.Sections.Count; i++)
                     {
-                        var round = Model.Rounds[i];
-                        var roundText = i < Model.RoundTexts.Count ? Model.RoundTexts[i] : "";
-                        
-                        <div class="preview-round">
+                        var section = Model.Sections[i];
+                        @for (int j = 0; j < section.Rounds.Count; j++)
+                        {
+                            var round = section.Rounds[j];
+                            var roundText = j < section.RoundTexts.Count ? section.RoundTexts[j] : "";
+                            
+                            <div class="preview-round">
                             <div class="preview-round-header">
                                 <h3>Round @(i + 1)</h3>
                                 <span class="preview-stitch-count">@round.StitchCount stitches</span>
                             </div>
                             <p class="preview-round-text">@roundText</p>
                         </div>
+                        }
                     }
                 </div>
             }
@@ -178,9 +188,9 @@
 @section Scripts {
     <script>
         // State
-        let roundCounter = Math.max(@(Model?.RoundTexts?.Count ?? 0), 1);
+        let roundCounter = Math.max(@(Model?.Sections?.FirstOrDefault()?.RoundTexts?.Count ?? 0), 1);
         let isDirty = false;
-        let hasValidated = @((Model?.Rounds != null && Model.Rounds.Count > 0) ? "true" : "false");
+        let hasValidated = @((Model?.Sections != null && Model.Sections.Any(s => s.Rounds.Count > 0)) ? "true" : "false");
 
         // Round management
         function addRound() {
@@ -192,7 +202,7 @@
                     <label class="round-label">Round ${roundCounter + 1}</label>
                     <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
                 </div>
-                <textarea name="RoundTexts[${roundCounter}]" rows="2" class="round-text form-control"></textarea>
+                <textarea name="Sections[0].RoundTexts[${roundCounter}]" rows="2" class="round-text form-control"></textarea>
             `;
             container.appendChild(roundDiv);
             roundCounter++;
@@ -208,7 +218,7 @@
         function reindexRounds() {
             document.querySelectorAll('.round-input-group').forEach((round, index) => {
                 round.querySelector('.round-label').textContent = `Round ${index + 1}`;
-                round.querySelector('textarea').name = `RoundTexts[${index}]`;
+                round.querySelector('textarea').name = `Sections[0].RoundTexts[${index}]`;
             });
             roundCounter = document.querySelectorAll('.round-input-group').length;
         }
