@@ -115,10 +115,10 @@ namespace CrochetPatternParser.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("PatternId")
+                    b.Property<int>("RoundNumber")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("RoundNumber")
+                    b.Property<int>("SectionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Text")
@@ -127,9 +127,28 @@ namespace CrochetPatternParser.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SectionId");
+
+                    b.ToTable("Rounds");
+                });
+
+            modelBuilder.Entity("CrochetPatternParser.Data.SectionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PatternId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SectionNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("PatternId");
 
-                    b.ToTable("RoundEntity");
+                    b.ToTable("Sections");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -274,8 +293,19 @@ namespace CrochetPatternParser.Migrations
 
             modelBuilder.Entity("CrochetPatternParser.Data.RoundEntity", b =>
                 {
-                    b.HasOne("CrochetPatternParser.Data.PatternEntity", "Pattern")
+                    b.HasOne("CrochetPatternParser.Data.SectionEntity", "Section")
                         .WithMany("Rounds")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Section");
+                });
+
+            modelBuilder.Entity("CrochetPatternParser.Data.SectionEntity", b =>
+                {
+                    b.HasOne("CrochetPatternParser.Data.PatternEntity", "Pattern")
+                        .WithMany("Sections")
                         .HasForeignKey("PatternId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -335,6 +365,11 @@ namespace CrochetPatternParser.Migrations
                 });
 
             modelBuilder.Entity("CrochetPatternParser.Data.PatternEntity", b =>
+                {
+                    b.Navigation("Sections");
+                });
+
+            modelBuilder.Entity("CrochetPatternParser.Data.SectionEntity", b =>
                 {
                     b.Navigation("Rounds");
                 });

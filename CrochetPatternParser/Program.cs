@@ -8,9 +8,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure DbContext differently depending on environment
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("Sqlite");
-    options.UseSqlite(connectionString, sqliteOptions =>
+    /* if (builder.Environment.IsDevelopment())
+    { */
+    var databasePath = Path.Combine(builder.Environment.ContentRootPath, "Data", "crochetparser.db");
+    Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
+
+    options.UseSqlite($"Data Source={databasePath}", sqliteOptions =>
         sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
+    /* }
+    else
+    {
+        var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+        options.UseSqlServer(connectionString);
+    } */
+
+    /* var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+        options.UseSqlServer(connectionString); */
 });
 
 builder.Services
@@ -58,6 +71,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 
 app.Run();
