@@ -70,14 +70,4 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    app.Logger.LogInformation(
-    "SQLite data source: {DataSource}",
-    Path.GetFullPath(dbContext.Database.GetDbConnection().DataSource));
-    dbContext.Database.Migrate();
-}
-
-
 app.Run();
