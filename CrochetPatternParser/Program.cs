@@ -8,18 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure DbContext differently depending on environment
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    /* if (builder.Environment.IsDevelopment())
-    {
-        var connectionString = builder.Configuration.GetConnectionString("Sqlite");
-        options.UseSqlite(connectionString, sqliteOptions => 
-            sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
-    }
-    else
-    {
-        var connectionString = builder.Configuration.GetConnectionString("SqlServer");
-        options.UseSqlServer(connectionString);
-    }
- */
     var connectionString = builder.Configuration.GetConnectionString("SqlServer");
         options.UseSqlServer(connectionString);
 });

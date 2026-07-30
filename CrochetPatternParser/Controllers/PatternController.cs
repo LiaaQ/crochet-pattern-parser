@@ -89,7 +89,9 @@ namespace CrochetPatternParser.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(PatternViewModel model, int? patternId)
         {
-            var imagePath = await GetImagePathAsync(model);
+            try
+            {
+                var imagePath = model.ImagePath;
 
             if (!User.Identity?.IsAuthenticated ?? true)
             {
@@ -111,6 +113,13 @@ namespace CrochetPatternParser.Controllers
 
             TempData["SaveSuccess"] = "True";
             return RedirectToAction(nameof(MyPatterns));
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+            
         }
 
         [HttpGet]
@@ -165,9 +174,7 @@ namespace CrochetPatternParser.Controllers
 
             ViewBag.PatternId = pattern.Id;
             return View("Index", viewModel);
-        }
-
-        
+        }        
 
         SectionViewModel BuildValidatedSectionViewModel(List<string> roundTexts, int sectionIndex, string? sectionName = null)
         {
