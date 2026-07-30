@@ -8,17 +8,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure DbContext differently depending on environment
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    /* if (builder.Environment.IsDevelopment())
-    { */
+    if (builder.Environment.IsDevelopment())
+    {
         var connectionString = builder.Configuration.GetConnectionString("Sqlite");
         options.UseSqlite(connectionString, sqliteOptions => 
             sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
-    /* }
+    }
     else
     {
         var connectionString = builder.Configuration.GetConnectionString("SqlServer");
         options.UseSqlServer(connectionString);
-    } */
+    }
 
     /* var connectionString = builder.Configuration.GetConnectionString("SqlServer");
         options.UseSqlServer(connectionString); */
@@ -73,6 +73,9 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    app.Logger.LogInformation(
+    "SQLite data source: {DataSource}",
+    Path.GetFullPath(dbContext.Database.GetDbConnection().DataSource));
     dbContext.Database.Migrate();
 }
 

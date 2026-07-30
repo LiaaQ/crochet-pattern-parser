@@ -109,7 +109,8 @@ namespace CrochetPatternParser.Controllers
             var viewModel = await SavePattern(model.Title, sections, imagePath, patternId);
             viewModel.Sections = sections;
 
-            return View("Index", viewModel);
+            TempData["SaveSuccess"] = "True";
+            return RedirectToAction(nameof(MyPatterns));
         }
 
         [HttpGet]
@@ -136,6 +137,7 @@ namespace CrochetPatternParser.Controllers
 
             var pattern = await _db.Patterns
                 .Include(p => p.Sections)
+                .ThenInclude(s => s.Rounds)
                 .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
 
             if (pattern == null)

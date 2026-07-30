@@ -99,6 +99,11 @@
                         }
                     </div>
 
+                    <div class="section-actions" style="margin-top: 10px;">
+                        <button type="button" class="btn btn-add-round" onclick="addRound(this)">➕ Add Round</button>
+                        <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
+                    </div>
+
                     <div class="section-validation-results" id="sectionResults_@i">
                         @if (section.Rounds.Count > 0)
                         {
@@ -129,10 +134,6 @@
                                 }
                             </div>
                         }
-                        <div class="section-actions" style="margin-top: 10px;">
-                            <button type="button" class="btn btn-add-round" onclick="addRound(this)">➕ Add Round</button>
-                            <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
-                        </div>
                     </div>
                 </article>
             }
@@ -140,6 +141,11 @@
 
         <div class="pattern-form-actions">
             <div class="control-buttons">
+                <button type="button" 
+                        class="btn btn-add-round" 
+                        onclick="addSection()">
+                        ➕ Add Section
+                </button>
                 <button type="submit"
                         asp-action="Validate"
                         asp-controller="Pattern"
@@ -160,11 +166,7 @@
                         onclick="togglePreview()">
                     👁️ Preview
                 </button>
-                <button type="button" 
-                        class="btn btn-add-round" 
-                        onclick="addSection()">
-                        ➕ Add Section
-                </button>
+
             </div>
         </div>
     </form>
