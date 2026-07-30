@@ -10,11 +10,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     /* if (builder.Environment.IsDevelopment())
     { */
-    var databasePath = Path.Combine(builder.Environment.ContentRootPath, "Data", "crochetparser.db");
-    Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
-
-    options.UseSqlite($"Data Source={databasePath}", sqliteOptions =>
-        sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
+        var connectionString = builder.Configuration.GetConnectionString("Sqlite");
+        options.UseSqlite(connectionString, sqliteOptions => 
+            sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
     /* }
     else
     {

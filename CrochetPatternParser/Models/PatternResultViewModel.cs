@@ -11,6 +11,7 @@ namespace CrochetPatternParser.Models
     public class SectionViewModel
     {
         public int SectionIndex {get; set;}
+        public string SectionName { get; set; } = "Section";
         public List<RoundViewModel> Rounds { get; set; } = new();
         public List<string> RoundTexts { get; set; } = new();
 
@@ -20,7 +21,6 @@ namespace CrochetPatternParser.Models
     {
         public string Title { get; set; } = "Untitled Pattern";
         public List<SectionViewModel> Sections { get; set; } = new();
-        public List<string> RoundTexts { get; set; } = new();
         public bool Saved { get; set; } = false;
         public string? ImagePath { get; set; }
         public IFormFile? ImageFile { get; set; }

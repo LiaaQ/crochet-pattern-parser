@@ -141,6 +141,10 @@ namespace CrochetPatternParser.Migrations
                     b.Property<int>("PatternId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("SectionNumber")
                         .HasColumnType("INTEGER");
 

@@ -48,6 +48,7 @@ namespace CrochetPatternParser.Controllers
                 {
                     new SectionViewModel
                     {
+                        SectionName = "Section 1",
                         RoundTexts = GetFilteredRoundTexts(model.Sections.SelectMany(s => s.RoundTexts).ToList())
                     }
                 };
@@ -55,7 +56,7 @@ namespace CrochetPatternParser.Controllers
             for (int i = 0; i < sectionsToValidate.Count; i++)
             {
                 var section = sectionsToValidate[i];
-                viewModel.Sections.Add(BuildValidatedSectionViewModel(section.RoundTexts, i));
+                viewModel.Sections.Add(BuildValidatedSectionViewModel(section.RoundTexts, i, section.SectionName));
             }
 
             viewModel.Title = model.Title;
@@ -70,20 +71,19 @@ namespace CrochetPatternParser.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ValidateSection(SectionViewModel section, int sectionIndex, int? patternId)
+        public IActionResult ValidateSection([FromBody] SectionViewModel section)
         {
-            var viewModel = new PatternViewModel();
-            var roundTexts = section.RoundTexts ?? new List<string>();
-            var sectionViewModel = new SectionViewModel
-            {
-                SectionIndex = sectionIndex,
-                RoundTexts = roundTexts
-            };
+            var validatedSection = BuildValidatedSectionViewModel(
+                section.RoundTexts ?? new List<string>(),
+                section.SectionIndex,
+                section.SectionName);
 
-            var validatedSection = BuildValidatedSectionViewModel(roundTexts, sectionIndex);
-            viewModel.Sections.Add(validatedSection);
-                
-            return View("Index", viewModel);
+            return Json(new
+            {
+                sectionIndex = validatedSection.SectionIndex,
+                sectionName = validatedSection.SectionName,
+                rounds = validatedSection.Rounds
+            });
         }
 
         [HttpPost]
@@ -146,6 +146,7 @@ namespace CrochetPatternParser.Controllers
                 .OrderBy(s => s.SectionNumber)
                 .Select(s => new SectionViewModel
                 {
+                    SectionName = s.SectionName,
                     RoundTexts = s.Rounds
                     .OrderBy(r => r.RoundNumber)
                     .Select(r => r.Text)
@@ -166,16 +167,28 @@ namespace CrochetPatternParser.Controllers
 
         
 
-        SectionViewModel BuildValidatedSectionViewModel(List<string> roundTexts, int sectionIndex)
+        SectionViewModel BuildValidatedSectionViewModel(List<string> roundTexts, int sectionIndex, string? sectionName = null)
         {
             var sectionViewModel = new SectionViewModel
             {
                 SectionIndex = sectionIndex,
+                SectionName = string.IsNullOrWhiteSpace(sectionName) ? $"Section {sectionIndex + 1}" : sectionName,
                 RoundTexts = roundTexts
             };
 
             // Concatenate rounds for processing
-            var patternText = string.Join(";", roundTexts);
+            var patternText = string.Join(";", GetFilteredRoundTexts(roundTexts));
+
+            if (string.IsNullOrWhiteSpace(patternText))
+            {
+                sectionViewModel.Rounds.Add(new RoundViewModel
+                {
+                    RoundIndex = 0,
+                    Error = "Add at least one round before validating this section."
+                });
+
+                return sectionViewModel;
+            }
 
             try
             {
@@ -257,6 +270,9 @@ namespace CrochetPatternParser.Controllers
                         var sectionEntity = new SectionEntity
                         {
                             SectionNumber = i + 1,
+                            SectionName = string.IsNullOrWhiteSpace(sectionViewModel.SectionName)
+                                ? $"Section {i + 1}"
+                                : sectionViewModel.SectionName,
                             PatternId = entity.Id
                         };
 
@@ -290,7 +306,10 @@ namespace CrochetPatternParser.Controllers
                     var sectionViewModel = sections[i];
                     var sectionEntity = new SectionEntity
                     {
-                        SectionNumber = i + 1
+                        SectionNumber = i + 1,
+                        SectionName = string.IsNullOrWhiteSpace(sectionViewModel.SectionName)
+                            ? $"Section {i + 1}"
+                            : sectionViewModel.SectionName
                     };
 
                     for (int j = 0; j < sectionViewModel.RoundTexts.Count; j++)

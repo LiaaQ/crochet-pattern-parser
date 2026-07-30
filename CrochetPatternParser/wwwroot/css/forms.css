@@ -7,11 +7,17 @@
 
 .pattern-form-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     gap: 15px;
     margin-top: 25px;
     flex-wrap: wrap;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
 }
 
 /* Image Upload Styling */

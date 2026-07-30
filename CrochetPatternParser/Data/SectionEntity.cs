@@ -6,6 +6,8 @@ namespace CrochetPatternParser.Data
 
         public int SectionNumber { get; set; }
 
+        public string SectionName { get; set; } = "Section";
+
         public int PatternId { get; set; }
 
         public PatternEntity Pattern { get; set; } = null!;

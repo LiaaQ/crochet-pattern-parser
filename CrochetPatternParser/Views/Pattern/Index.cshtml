@@ -1,12 +1,23 @@
 @model CrochetPatternParser.Models.PatternViewModel
+@using CrochetPatternParser.Models
 @{
-    ViewData["Title"] = "Crochet Pattern Validator";
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model?.Title) ? "Untitled Pattern" : Model.Title;
+
+    var sections = Model?.Sections != null && Model.Sections.Count > 0
+        ? Model.Sections
+        : new List<SectionViewModel>
+        {
+            new SectionViewModel
+            {
+                SectionName = "Section 1",
+                RoundTexts = new List<string> { string.Empty }
+            }
+        };
 }
 
 <div class="pattern-validator-container">
     <div class="page-header">
-        <h2>🧶 Crochet Pattern Validator</h2>
-        <p class="subtitle">No more math ain't mathing moments!</p>
+        <h2>@ViewData["Title"]</h2>
     </div>
 
     @if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"]?.ToString() == "True")
@@ -19,17 +30,19 @@
         </div>
     }
 
-    <form method="post" class="section-container" enctype="multipart/form-data">
+    <form method="post" class="section-container" enctype="multipart/form-data" id="patternForm">
         <div asp-validation-summary="ModelOnly" class="text-danger validation-summary"></div>
+
         @if (ViewBag.PatternId != null)
         {
             <input type="hidden" name="patternId" value="@ViewBag.PatternId" />
         }
+
         @if (!string.IsNullOrEmpty(Model?.ImagePath))
         {
             <input type="hidden" asp-for="ImagePath" />
         }
-        
+
         <div class="section-group">
             <label for="patternTitle" class="section-label">Pattern Title</label>
             <input type="text" asp-for="Title" id="patternTitle" class="form-control styled-text-input" placeholder="Enter your pattern title..." />
@@ -50,297 +63,338 @@
             </div>
         </div>
 
-    <div class="section-group">
-        <label class="section-label">Pattern Rounds</label>
-        <div id="roundsContainer">
-            @if (Model?.Sections != null && Model.Sections.Count > 0)
+        <div id="sectionsContainer">
+            @for (var i = 0; i < sections.Count; i++)
             {
-                @for (int i = 0; i < Model.Sections.Count; i++)
-                {
-                    @for (int j = 0; j < Model.Sections[i].RoundTexts.Count; j++)
-                    {
-                        <div class="round-input-group" data-round-index="@j">
-                            <div class="round-header">
-                                <label class="round-label">Round @(j + 1)</label>
-                                <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                var section = sections[i];
+                var roundTexts = section.RoundTexts.Count > 0 ? section.RoundTexts : new List<string> { string.Empty };
+                var sectionName = string.IsNullOrWhiteSpace(section.SectionName) ? $"Section {i + 1}" : section.SectionName;
+
+                <article class="section-group pattern-section" data-section-index="@i">
+                    <div class="section-header">
+                        <div class="section-title-group">
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap; width:100%; margin-bottom:0.75rem;">
+                                <label class="section-label" for="@($"Sections_{i}__SectionName")" style="position: relative; top: 4mm;">Section Name</label>
+                                <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
+                                <input type="text"
+                                   class="form-control styled-text-input section-name-input"
+                                   id="@($"Sections_{i}__SectionName")"
+                                   name="Sections[@i].SectionName"
+                                   value="@sectionName"
+                                   placeholder="Head, Body, Sleeves, etc." />
                             </div>
-                            <textarea name="Sections[@i].RoundTexts[@j]" rows="2" class="round-text form-control">@Model.Sections[i].RoundTexts[j]</textarea>
+                        </div>
+                    </div>
+
+                    <div class="section-rounds" data-rounds-container>
+                        @for (var j = 0; j < roundTexts.Count; j++)
+                        {
+                            <div class="round-input-group" data-round-index="@j">
+                                <div class="round-header">
+                                    <label class="round-label">Round @(j + 1)</label>
+                                    <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                                </div>
+                                <textarea name="Sections[@i].RoundTexts[@j]" rows="2" class="round-text form-control">@roundTexts[j]</textarea>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="section-validation-results" id="sectionResults_@i">
+                        @if (section.Rounds.Count > 0)
+                        {
+                            <h3 class="results-title">Validation Results</h3>
+                            <div class="results-list">
+                                @foreach (var round in section.Rounds)
+                                {
+                                    if (!string.IsNullOrEmpty(round.Error))
+                                    {
+                                        <div class="result-item result-error">
+                                            <span class="result-icon">❌</span>
+                                            <div class="result-content">
+                                                <strong>Round @round.RoundIndex</strong>
+                                                <p>@round.Error</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="result-item result-success">
+                                            <span class="result-icon">✅</span>
+                                            <div class="result-content">
+                                                <strong>Round @round.RoundIndex</strong>
+                                                <p>@round.StitchCount stitches</p>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                        <div class="section-actions" style="margin-top: 10px;">
+                            <button type="button" class="btn btn-add-round" onclick="addRound(this)">➕ Add Round</button>
+                            <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+
+        <div class="pattern-form-actions">
+            <div class="control-buttons">
+                <button type="submit"
+                        asp-action="Validate"
+                        asp-controller="Pattern"
+                        class="btn btn-validate"
+                        id="validateButton">
+                    ✓ Validate
+                </button>
+                <button type="submit"
+                        asp-action="Save"
+                        asp-controller="Pattern"
+                        class="btn btn-save"
+                        id="saveButton">
+                    💾 Save
+                </button>
+                <button type="button"
+                        class="btn btn-save"
+                        id="previewButton"
+                        onclick="togglePreview()">
+                    👁️ Preview
+                </button>
+                <button type="button" 
+                        class="btn btn-add-round" 
+                        onclick="addSection()">
+                        ➕ Add Section
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <template id="sectionTemplate">
+        <article class="section-group pattern-section" data-section-index="__SECTION_INDEX__">
+            <div class="section-header">
+                <div class="section-title-group" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap; width:100%; margin-bottom:0.75rem;">
+                    <label class="section-label" for="@($"Sections_[__SECTION_INDEX__]__SectionName")" style="position: relative; top: 4mm;">Section Name</label>
+                    <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
+                    <input type="text"
+                        class="form-control styled-text-input section-name-input"
+                        id="@($"Sections_[__SECTION_INDEX__]__SectionName")"
+                        name="Sections[__SECTION_INDEX__].SectionName"
+                        value=""
+                        placeholder="Head, Body, Sleeves, etc." />
+                </div>
+
+            </div>
+
+            <div class="section-rounds" data-rounds-container>
+                __ROUND_HTML__
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-add-round" onclick="addRound(this)">➕ Add Round</button>
+                <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
+            </div>
+
+            <div class="section-validation-results" id="sectionResults___SECTION_INDEX__"></div>
+        </article>
+    </template>
+
+    <template id="roundTemplate">
+        <div class="round-input-group" data-round-index="__ROUND_INDEX__">
+            <div class="round-header">
+                <label class="round-label">Round __ROUND_NUMBER__</label>
+                <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+            </div>
+            <textarea name="Sections[__SECTION_INDEX__].RoundTexts[__ROUND_INDEX__]" rows="2" class="round-text form-control"></textarea>
+        </div>
+    </template>
+
+    <div id="patternPreview" class="pattern-preview-container" style="display: none;">
+        <div class="section-container">
+            <h3 class="results-title">📖 Pattern Preview</h3>
+            <div id="previewContent" class="preview-content">
+                @if (sections.Count > 0)
+                {
+                    <div class="preview-header">
+                        <h2>@ViewData["Title"]</h2>
+                        <p class="preview-date">Created: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                    </div>
+
+                    @for (var i = 0; i < sections.Count; i++)
+                    {
+                        var section = sections[i];
+                        var sectionName = string.IsNullOrWhiteSpace(section.SectionName) ? $"Section {i + 1}" : section.SectionName;
+
+                        <div class="preview-section">
+                            <h3>@sectionName</h3>
+                            @for (var j = 0; j < section.RoundTexts.Count; j++)
+                            {
+                                <div class="preview-round">
+                                    <div class="preview-round-header">
+                                        <h4>Round @(j + 1)</h4>
+                                    </div>
+                                    <p class="preview-round-text">@(section.RoundTexts[j])</p>
+                                </div>
+                            }
                         </div>
                     }
-                }
-            }
-            else
-            {
-                <div class="round-input-group" data-round-index="0">
-                    <div class="round-header">
-                        <label class="round-label">Round 1</label>
-                        <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
-                    </div>
-                    <textarea name="Sections[0].RoundTexts[0]" rows="2" class="round-text form-control"></textarea>
-                </div>
-            }
-        </div>
-    </div>
-
-    <div class="pattern-form-actions">
-        <button type="button" class="btn btn-add-round" onclick="addSection()">➕ Add Section</button>
-        <button type="button" class="btn btn-add-round" onclick="addRound()">➕ Add Round</button>
-        
-        <div class="submit-buttons">
-            <button type="submit" 
-                    asp-action="Validate"
-                    asp-controller="Pattern"
-                    class="btn btn-validate"
-                    id="validateButton">
-                ✓ Validate Pattern
-            </button>
-            <button type="submit"
-                    asp-action="Save"
-                    asp-controller="Pattern"
-                    class="btn btn-save"
-                    id="saveButton">
-                💾 Save Pattern
-            </button>
-            <button type="button"
-                    class="btn btn-save"
-                    id="previewButton"
-                    onclick="togglePreview()">
-                👁️ Preview Pattern
-            </button>
-        </div>
-    </div>
-</form>
-
-@if (Model?.Sections != null && Model.Sections.Count > 0)
-{
-    <div class="validation-results">
-        <h3 class="results-title">Validation Results</h3>
-        <div class="results-list">
-        @foreach (var section in Model.Sections)
-        {
-            @foreach (var round in section.Rounds)
-            {
-                if (!string.IsNullOrEmpty(round.Error))
-                {
-                    <div class="result-item result-error">
-                        <span class="result-icon">❌</span>
-                        <div class="result-content">
-                            <strong>Round @round.RoundIndex</strong>
-                            <p>@round.Error</p>
-                        </div>
-                    </div>
                 }
                 else
                 {
-                    <div class="result-item result-success">
-                        <span class="result-icon">✅</span>
-                        <div class="result-content">
-                            <strong>Round @round.RoundIndex</strong>
-                            <p>@round.StitchCount stitches</p>
-                        </div>
-                    </div>
+                    <p class="preview-empty">No sections added yet. Add a section to see the preview.</p>
                 }
-            }
-        }
-        </div>
-    </div>
-}
-
-<div id="patternPreview" class="pattern-preview-container" style="display: none;">
-    <div class="section-container">
-        <h3 class="results-title">📖 Pattern Preview</h3>
-        <div id="previewContent" class="preview-content">
-            @if (Model?.Sections != null && Model.Sections.Count > 0)
-            {
-                <div class="preview-header">
-                    <h2>@(string.IsNullOrEmpty(Model.Title) ? "Untitled Pattern" : Model.Title)</h2>
-                    <p class="preview-date">Created: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
-                </div>
-                <div class="preview-rounds">
-                    @for (int i = 0; i < Model.Sections.Count; i++)
-                    {
-                        var section = Model.Sections[i];
-                        @for (int j = 0; j < section.Rounds.Count; j++)
-                        {
-                            var round = section.Rounds[j];
-                            var roundText = j < section.RoundTexts.Count ? section.RoundTexts[j] : "";
-                            
-                            <div class="preview-round">
-                            <div class="preview-round-header">
-                                <h3>Round @(i + 1)</h3>
-                                <span class="preview-stitch-count">@round.StitchCount stitches</span>
-                            </div>
-                            <p class="preview-round-text">@roundText</p>
-                        </div>
-                        }
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="preview-empty">No rounds added yet. Add a round to see the preview.</p>
-            }
+            </div>
         </div>
     </div>
 </div>
-</div>
-
 
 @section Scripts {
     <script>
-        // State
-        let roundCounter = Math.max(@(Model?.Sections?.FirstOrDefault()?.RoundTexts?.Count ?? 0), 1);
-        let isDirty = false;
-        let hasValidated = @((Model?.Sections != null && Model.Sections.Any(s => s.Rounds.Count > 0)) ? "true" : "false");
+        function buildRoundHtml(sectionIndex, roundIndex) {
+            return document.getElementById('roundTemplate').innerHTML
+                .replace(/__SECTION_INDEX__/g, sectionIndex)
+                .replace(/__ROUND_INDEX__/g, roundIndex)
+                .replace(/__ROUND_NUMBER__/g, roundIndex + 1);
+        }
 
-        // Round management
-        function addRound() {
-            const container = document.getElementById("roundsContainer");
-            const roundDiv = document.createElement("div");
-            roundDiv.className = "round-input-group";
-            roundDiv.innerHTML = `
-                <div class="round-header">
-                    <label class="round-label">Round ${roundCounter + 1}</label>
-                    <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
-                </div>
-                <textarea name="Sections[0].RoundTexts[${roundCounter}]" rows="2" class="round-text form-control"></textarea>
-            `;
-            container.appendChild(roundDiv);
-            roundCounter++;
-            isDirty = true;
+        function reindexSections() {
+            const sections = Array.from(document.querySelectorAll('.pattern-section'));
+
+            sections.forEach((section, sectionIndex) => {
+                section.dataset.sectionIndex = sectionIndex;
+
+                const sectionNameInput = section.querySelector('.section-name-input');
+                if (sectionNameInput) {
+                    sectionNameInput.name = `Sections[${sectionIndex}].SectionName`;
+                    sectionNameInput.id = `Sections_${sectionIndex}__SectionName`;
+                }
+
+                const results = section.querySelector('.section-validation-results');
+                if (results) {
+                    results.id = `sectionResults_${sectionIndex}`;
+                }
+
+                const rounds = Array.from(section.querySelectorAll('.round-input-group'));
+                rounds.forEach((round, roundIndex) => {
+                    round.dataset.roundIndex = roundIndex;
+                    round.querySelector('.round-label').textContent = `Round ${roundIndex + 1}`;
+                    round.querySelector('.round-text').name = `Sections[${sectionIndex}].RoundTexts[${roundIndex}]`;
+                });
+            });
+        }
+
+        function addSection() {
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            const sectionIndex = sectionsContainer.querySelectorAll('.pattern-section').length;
+            const sectionName = `Section ${sectionIndex + 1}`;
+            const sectionHtml = document.getElementById('sectionTemplate').innerHTML
+                .replace(/__SECTION_INDEX__/g, sectionIndex)
+                .replace(/__SECTION_NAME__/g, sectionName)
+                .replace(/__ROUND_HTML__/g, buildRoundHtml(sectionIndex, 0));
+
+            sectionsContainer.insertAdjacentHTML('beforeend', sectionHtml);
+            reindexSections();
+        }
+
+        function removeSection(button) {
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            if (sectionsContainer.querySelectorAll('.pattern-section').length <= 1) {
+                return;
+            }
+
+            button.closest('.pattern-section').remove();
+            reindexSections();
+        }
+
+        function addRound(button) {
+            const section = button.closest('.pattern-section');
+            const sectionIndex = Array.from(document.querySelectorAll('.pattern-section')).indexOf(section);
+            const roundsContainer = section.querySelector('[data-rounds-container]');
+            const roundIndex = roundsContainer.querySelectorAll('.round-input-group').length;
+
+            roundsContainer.insertAdjacentHTML('beforeend', buildRoundHtml(sectionIndex, roundIndex));
+            reindexSections();
         }
 
         function deleteRound(button) {
+            const section = button.closest('.pattern-section');
+            const rounds = section.querySelectorAll('.round-input-group');
+            if (rounds.length <= 1) {
+                return;
+            }
+
             button.closest('.round-input-group').remove();
-            reindexRounds();
-            isDirty = true;
+            reindexSections();
         }
 
-        function reindexRounds() {
-            document.querySelectorAll('.round-input-group').forEach((round, index) => {
-                round.querySelector('.round-label').textContent = `Round ${index + 1}`;
-                round.querySelector('textarea').name = `Sections[0].RoundTexts[${index}]`;
-            });
-            roundCounter = document.querySelectorAll('.round-input-group').length;
-        }
+        async function validateSection(button) {
+            const section = button.closest('.pattern-section');
+            const sectionIndex = Array.from(document.querySelectorAll('.pattern-section')).indexOf(section);
+            const sectionName = section.querySelector('.section-name-input')?.value?.trim() || `Section ${sectionIndex + 1}`;
+            const roundTexts = Array.from(section.querySelectorAll('.round-text')).map(textarea => textarea.value);
 
-        // Form submission handling
-        function setupFormHandlers() {
-            document.querySelector('form')?.addEventListener('submit', () => {
-                reindexRounds();
-                isDirty = false;
-                hasValidated = false;
+            const response = await fetch('@Url.Action("ValidateSection", "Pattern")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sectionIndex: sectionIndex,
+                    sectionName: sectionName,
+                    roundTexts: roundTexts
+                })
             });
 
-            document.getElementById("validateButton")?.addEventListener("click", () => {
-                isDirty = false;
-                hasValidated = false;
-            });
-            
-            document.getElementById("saveButton")?.addEventListener("click", () => {
-                isDirty = false;
-                hasValidated = false;
-            });
-        }
-
-        // Input tracking
-        function setupInputTracking() {
-            document.addEventListener('input', (e) => {
-                if (e.target.classList.contains('round-text')) {
-                    isDirty = true;
-                    hasValidated = false;
+            const data = await response.json();
+            const resultsContainer = section.querySelector('.section-validation-results');
+            const resultHtml = (data.rounds || []).map(round => {
+                if (round.error) {
+                    return `
+                        <div class="result-item result-error">
+                            <span class="result-icon">❌</span>
+                            <div class="result-content">
+                                <strong>Round ${round.roundIndex}</strong>
+                                <p>${round.error}</p>
+                            </div>
+                        </div>`;
                 }
-            });
+
+                return `
+                    <div class="result-item result-success">
+                        <span class="result-icon">✅</span>
+                        <div class="result-content">
+                            <strong>Round ${round.roundIndex}</strong>
+                            <p>${round.stitchCount} stitches</p>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            resultsContainer.innerHTML = `
+                <h3 class="results-title">${data.sectionName || sectionName}</h3>
+                <div class="results-list">${resultHtml}</div>`;
         }
 
-        // Keyboard shortcuts
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', (e) => {
-                if (!e.target.classList.contains('round-text')) return;
-
-                const textareas = Array.from(document.querySelectorAll('.round-text'));
-                const currentIndex = textareas.indexOf(e.target);
-
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    addRound();
-                    setTimeout(() => {
-                        const allTextareas = document.querySelectorAll('.round-text');
-                        allTextareas[allTextareas.length - 1]?.focus();
-                    }, 0);
-                } 
-                else if (e.key === 'Delete' && e.ctrlKey) {
-                    e.preventDefault();
-                    const rounds = document.querySelectorAll('.round-input-group');
-                    if (rounds.length > 1) {
-                        e.target.closest('.round-input-group').remove();
-                        reindexRounds();
-                        isDirty = true;
-                        setTimeout(() => {
-                            const allTextareas = document.querySelectorAll('.round-text');
-                            const focusIndex = Math.min(currentIndex, allTextareas.length - 1);
-                            allTextareas[focusIndex]?.focus();
-                        }, 0);
-                    }
-                } 
-                else if (e.key === 'ArrowUp' && e.ctrlKey) {
-                    e.preventDefault();
-                    if (currentIndex > 0) {
-                        textareas[currentIndex - 1]?.focus();
-                    }
-                } 
-                else if (e.key === 'ArrowDown' && e.ctrlKey) {
-                    e.preventDefault();
-                    if (currentIndex < textareas.length - 1) {
-                        textareas[currentIndex + 1]?.focus();
-                    }
-                }
-            });
-        }
-
-        // Unsaved changes warning
-        function setupUnsavedWarning() {
-            window.addEventListener("beforeunload", (e) => {
-                if (hasValidated || isDirty) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
-        }
-
-        // Image preview
         function previewImage(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('imagePreview');
-                    const previewImg = document.getElementById('previewImg');
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                    
-                    // Hide current image if showing new one
-                    const currentImage = document.querySelector('.current-image-preview');
-                    if (currentImage) {
-                        currentImage.style.display = 'none';
-                    }
-                };
-                reader.readAsDataURL(file);
-                isDirty = true;
+            if (!file) {
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+
+            reader.readAsDataURL(file);
         }
 
-        // Pattern Preview Toggle
         function togglePreview() {
-            const previewContainer = document.getElementById('patternPreview');
-            const isVisible = previewContainer.style.display !== 'none';
-            previewContainer.style.display = isVisible ? 'none' : 'block';
+            const preview = document.getElementById('patternPreview');
+            preview.style.display = preview.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Initialize all handlers
-        setupFormHandlers();
-        setupInputTracking();
-        setupKeyboardShortcuts();
-        setupUnsavedWarning();
+        document.getElementById('patternForm')?.addEventListener('submit', () => {
+            reindexSections();
+        });
     </script>
 }
