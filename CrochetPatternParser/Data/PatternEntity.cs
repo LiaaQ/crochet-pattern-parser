@@ -11,7 +11,7 @@ namespace CrochetPatternParser.Data
         public string UserId { get; set; } = "";
         public ApplicationUserEntity User { get; set; } = null!;
 
-        // Navigation property for rounds
-        public ICollection<RoundEntity> Rounds { get; set; } = new List<RoundEntity>();
+        // Navigation property for sections
+        public ICollection<SectionEntity> Sections { get; set; } = new List<SectionEntity>();
     }
 }

@@ -11,13 +11,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     if (builder.Environment.IsDevelopment())
     {
         var connectionString = builder.Configuration.GetConnectionString("Sqlite");
-        options.UseSqlite(connectionString);
+        options.UseSqlite(connectionString, sqliteOptions => 
+            sqliteOptions.MigrationsAssembly("CrochetPatternParser"));
     }
     else
     {
         var connectionString = builder.Configuration.GetConnectionString("SqlServer");
         options.UseSqlServer(connectionString);
     }
+
+    /* var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+        options.UseSqlServer(connectionString); */
 });
 
 builder.Services
@@ -65,6 +69,15 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    app.Logger.LogInformation(
+    "SQLite data source: {DataSource}",
+    Path.GetFullPath(dbContext.Database.GetDbConnection().DataSource));
+    dbContext.Database.Migrate();
+}
 
 
 app.Run();

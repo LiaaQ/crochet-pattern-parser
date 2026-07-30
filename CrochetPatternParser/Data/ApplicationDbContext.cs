@@ -9,6 +9,8 @@ namespace CrochetPatternParser.Data
         : IdentityDbContext<ApplicationUserEntity, IdentityRole, string>
     {
         public DbSet<PatternEntity> Patterns => Set<PatternEntity>();
+        public DbSet<SectionEntity> Sections => Set<SectionEntity>();
+        public DbSet<RoundEntity> Rounds => Set<RoundEntity>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
