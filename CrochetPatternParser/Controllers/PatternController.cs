@@ -91,7 +91,7 @@ namespace CrochetPatternParser.Controllers
         {
             try
             {
-                var imagePath = model.ImagePath;
+                var imagePath = await GetImagePathAsync(model);
 
             if (!User.Identity?.IsAuthenticated ?? true)
             {
@@ -100,7 +100,15 @@ namespace CrochetPatternParser.Controllers
             }
 
             var sections = model.Sections ?? new List<SectionViewModel>();
-            var roundTexts = GetFilteredRoundTexts(sections.SelectMany(s => s.RoundTexts).ToList());
+
+            foreach (var section in sections)
+            {
+                section.RoundTexts = GetFilteredRoundTexts(section.RoundTexts);
+            }
+
+            var roundTexts = sections
+                .SelectMany(s => s.RoundTexts)
+                .ToList();
 
             if (roundTexts.Count == 0)
             {
@@ -290,7 +298,7 @@ namespace CrochetPatternParser.Controllers
                             sectionEntity.Rounds.Add(new RoundEntity
                             {
                                 RoundNumber = j + 1,
-                                Text = sectionViewModel.RoundTexts[j]
+                                Text = sectionViewModel.RoundTexts[j] ?? ""
                             });
                         }
 
@@ -326,7 +334,7 @@ namespace CrochetPatternParser.Controllers
                         sectionEntity.Rounds.Add(new RoundEntity
                         {
                             RoundNumber = j + 1,
-                            Text = sectionViewModel.RoundTexts[j]
+                            Text = sectionViewModel.RoundTexts[j] ?? ""
                         });
                     }
 
