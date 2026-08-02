@@ -92,7 +92,9 @@
                             <div class="round-input-group" data-round-index="@j">
                                 <div class="round-header">
                                     <label class="round-label">Round @(j + 1)</label>
-                                    <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                                    <button type="button" class="btn-symbol" onclick="moveRoundUp(this)" title="Move this round up" style="position: absolute; right: 90px; top: -8px;">&#129093;</button>
+                                    <button type="button" class="btn-symbol" onclick="moveRoundDown(this)" title="Move this round down" style="position: absolute; right: 50px;">&#129095;</button>
+                                    <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round" style="position: absolute; right: 0;">🗑️</button>
                                 </div>
                                 <textarea name="Sections[@i].RoundTexts[@j]" rows="2" class="round-text form-control">@roundTexts[j]</textarea>
                             </div>
@@ -204,7 +206,9 @@
         <div class="round-input-group" data-round-index="__ROUND_INDEX__">
             <div class="round-header">
                 <label class="round-label">Round __ROUND_NUMBER__</label>
-                <button type="button" class="btn-delete-round" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                <button type="button" class="btn-symbol" onclick="moveRoundUp(this)" title="Move this round up" style="position: absolute; right: 90px; top: -8px;">&#129093;</button>
+                <button type="button" class="btn-symbol" onclick="moveRoundDown(this)" title="Move this round down" style="position: absolute; right: 50px;">&#129095;</button>
+                <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round" style="position: absolute; right: 0;">🗑️</button>              
             </div>
             <textarea name="Sections[__SECTION_INDEX__].RoundTexts[__ROUND_INDEX__]" rows="2" class="round-text form-control" value=""></textarea>
         </div>
@@ -326,6 +330,26 @@
 
             button.closest('.round-input-group').remove();
             reindexSections();
+        }
+
+        function moveRoundUp(button) {
+            const round = button.closest('.round-input-group');
+            const previousRound = round.previousElementSibling;
+
+            if (previousRound) {
+                round.parentNode.insertBefore(round, previousRound);
+                reindexSections();
+            }
+        }
+
+        function moveRoundDown(button) {
+            const round = button.closest('.round-input-group');
+            const nextRound = round.nextElementSibling;
+
+            if (nextRound) {
+                round.parentNode.insertBefore(nextRound, round);
+                reindexSections();
+            }
         }
 
         async function validateSection(button) {
