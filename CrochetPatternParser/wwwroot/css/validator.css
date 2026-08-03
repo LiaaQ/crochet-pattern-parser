@@ -40,7 +40,17 @@
     display: flex;
     position: relative;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 10px;
+}
+
+.round-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .round-label {

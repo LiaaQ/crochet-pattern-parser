@@ -193,10 +193,7 @@ namespace CrochetPatternParser.Controllers
                 RoundTexts = roundTexts
             };
 
-            // Concatenate rounds for processing
-            var patternText = string.Join(";", GetFilteredRoundTexts(roundTexts));
-
-            if (string.IsNullOrWhiteSpace(patternText))
+            if (roundTexts.Count == 0)
             {
                 sectionViewModel.Rounds.Add(new RoundViewModel
                 {
@@ -207,39 +204,70 @@ namespace CrochetPatternParser.Controllers
                 return sectionViewModel;
             }
 
-            try
+            var validator = new PatternValidator();
+            int previousOutput = 0;
+
+            for (int i = 0; i < roundTexts.Count; i++)
             {
-                // Tokenize
-                var tokenizer = new Tokenizer(patternText);
-                var tokens = tokenizer.Tokenize();
+                var roundText = roundTexts[i];
+                var roundNumber = i + 1;
 
-                // Parse
-                var parser = new Parser(tokens);
-                var ast = parser.Parse();
+                try
+                {
+                    var tokenizer = new Tokenizer(roundText);
+                    var tokens = tokenizer.Tokenize();
 
-                // Validate pattern
-                var validator = new PatternValidator();
-                var result = validator.Validate(ast);
+                    var unknownToken = tokens.FirstOrDefault(token => token.Type == TokenType.Unknown);
+                    if (unknownToken != null)
+                    {
+                        sectionViewModel.Rounds.Add(new RoundViewModel
+                        {
+                            RoundIndex = roundNumber,
+                            Error = $"Unknown token: {unknownToken.Lexeme}"
+                        });
 
-                // Map results to ViewModel
-                foreach (var r in result.Rounds)
+                        break;
+                    }
+
+                    var parser = new Parser(tokens);
+                    var ast = parser.Parse();
+                    var roundAst = ast.Rounds.FirstOrDefault();
+
+                    if (roundAst == null)
+                    {
+                        sectionViewModel.Rounds.Add(new RoundViewModel
+                        {
+                            RoundIndex = roundNumber,
+                            Error = $"Could not parse round."
+                        });
+
+                        break;
+                    }
+
+                    var roundResult = validator.ValidateRound(roundAst, roundNumber, previousOutput);
+
+                    sectionViewModel.Rounds.Add(new RoundViewModel
+                    {
+                        RoundIndex = roundResult.RoundIndex,
+                        StitchCount = roundResult.StitchCount,
+                        ExpectedStitchConsumed = roundResult.ExpectedStitchConsumed,
+                        Error = roundResult.Error
+                    });
+
+                    if (roundResult.Error != null)
+                        break;
+
+                    previousOutput = roundResult.StitchCount;
+                }
+                catch (Exception ex)
                 {
                     sectionViewModel.Rounds.Add(new RoundViewModel
                     {
-                        RoundIndex = r.RoundIndex,
-                        StitchCount = r.StitchCount,
-                        ExpectedStitchConsumed = r.ExpectedStitchConsumed,
-                        Error = r.Error
+                        RoundIndex = roundNumber,
+                        Error = $"Unknown token: {ex.Message}"
                     });
+                    break;
                 }
-            }
-            catch (Exception ex)
-            {
-                sectionViewModel.Rounds.Add(new RoundViewModel
-                {
-                    RoundIndex = 0,
-                    Error = ex.Message
-                });
             }
 
             return sectionViewModel;

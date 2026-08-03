@@ -88,6 +88,36 @@ main {
     margin-bottom: 25px;
 }
 
+.section-header {
+    margin-bottom: 0.75rem;
+}
+
+.section-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.section-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.section-name-input {
+    width: 100%;
+}
+
 .section-container {
     background: linear-gradient(to bottom, var(--card-bg-start) 0%, var(--card-bg-end) 100%);
     padding: 35px;

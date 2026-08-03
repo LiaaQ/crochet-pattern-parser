@@ -46,6 +46,7 @@ public class Parser
             TokenType.LParen => ParseGroup(),
             TokenType.Color => ParseColor(),
             TokenType.FastenOff => ParseFastenOff(),
+            TokenType.Unknown => throw new Exception(Peek().Lexeme),
             _ => throw new Exception($"Unexpected token: {Peek().Type}")
         };
     }

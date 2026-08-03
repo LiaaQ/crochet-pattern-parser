@@ -1,4 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 namespace CrochetPatternParser.Core.Tokenizer;
@@ -77,13 +76,13 @@ public class Tokenizer
 
         return word switch
         {
-            "sc" or "hdc" or "dc" or "trc" or "inc" or "dec" or "slst"
+            "sc" or "hdc" or "dc" or "trc" or "inc" or "dec" or "mr" or "slst"
                 => new Token(TokenType.Stitch, word),
 
             "FO"
                 => new Token(TokenType.FastenOff, word),
 
-            _ => throw new Exception($"Unknown keyword: {word}")
+            _ => new Token(TokenType.Unknown, $"Unknown keyword: {word}")
         };
     }
 
@@ -96,7 +95,7 @@ public class Tokenizer
             '(' => new Token(TokenType.LParen, "("),
             ')' => new Token(TokenType.RParen, ")"),
             ';' => new Token(TokenType.Semicolon, ";"),
-            _ => null
+            _ => new Token(TokenType.Unknown, $"Unexpected character: {c}")
         };
     }
 
@@ -112,7 +111,7 @@ public class Tokenizer
         }
 
         if (sb.Length == 0)
-            throw new Exception("Color name expected after '@'");
+            return new Token(TokenType.Unknown, "Color name expected after '@'");
 
         return new Token(TokenType.Color, sb.ToString());
     }

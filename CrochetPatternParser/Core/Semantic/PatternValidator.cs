@@ -2,6 +2,35 @@ using CrochetPatternParser.Core.Ast;
 
 public class PatternValidator
 {
+    public RoundValidationResult ValidateRound(RoundNode round, int roundIndex, int? expectedStitchConsumed = null)
+    {
+        int output = round.GetProducedStitches();
+        int input = round.GetConsumedStitches();
+
+        var roundResult = new RoundValidationResult
+        {
+            RoundIndex = roundIndex,
+            StitchCount = output
+        };
+
+        if (roundIndex == 1)
+        {
+            if (output < 1)
+                roundResult.Error = "Round 1 must produce at least 1 stitch";
+
+            return roundResult;
+        }
+
+        roundResult.ExpectedStitchConsumed = expectedStitchConsumed;
+
+        if (expectedStitchConsumed.HasValue && input != expectedStitchConsumed.Value)
+        {
+            roundResult.Error = $"Expected to use {expectedStitchConsumed.Value} stitches, but used {input}";
+        }
+
+        return roundResult;
+    }
+
     public PatternValidationResult Validate(PatternNode pattern)
     {
         var result = new PatternValidationResult();

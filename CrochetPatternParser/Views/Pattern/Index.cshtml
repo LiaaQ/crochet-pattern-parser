@@ -73,16 +73,20 @@
                 <article class="section-group pattern-section" data-section-index="@i">
                     <div class="section-header">
                         <div class="section-title-group">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap; width:100%; margin-bottom:0.75rem;">
-                                <label class="section-label" for="@($"Sections_{i}__SectionName")" style="position: relative; top: 4mm;">Section Name</label>
-                                <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
-                                <input type="text"
-                                   class="form-control styled-text-input section-name-input"
-                                   id="@($"Sections_{i}__SectionName")"
-                                   name="Sections[@i].SectionName"
-                                   value="@sectionName"
-                                   placeholder="Head, Body, Sleeves, etc." />
+                            <div class="section-title-row">
+                                <label class="section-label" for="@($"Sections_{i}__SectionName")" style="margin-bottom: -20px;">Section Name</label>
+                                <div class="section-actions-row">
+                                    <button type="button" class="btn-symbol" onclick="moveItemUp(this, '.pattern-section')" title="Move this section up">&#129093;</button>
+                                    <button type="button" class="btn-symbol" onclick="moveItemDown(this, '.pattern-section')" title="Move this section down">&#129095;</button>
+                                    <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
+                                </div>
                             </div>
+                            <input type="text"
+                               class="form-control styled-text-input section-name-input"
+                               id="@($"Sections_{i}__SectionName")"
+                               name="Sections[@i].SectionName"
+                               value="@sectionName"
+                               placeholder="Head, Body, Arms, etc." />
                         </div>
                     </div>
 
@@ -92,9 +96,11 @@
                             <div class="round-input-group" data-round-index="@j">
                                 <div class="round-header">
                                     <label class="round-label">Round @(j + 1)</label>
-                                    <button type="button" class="btn-symbol" onclick="moveRoundUp(this)" title="Move this round up" style="position: absolute; right: 90px; top: -8px;">&#129093;</button>
-                                    <button type="button" class="btn-symbol" onclick="moveRoundDown(this)" title="Move this round down" style="position: absolute; right: 50px;">&#129095;</button>
-                                    <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round" style="position: absolute; right: 0;">🗑️</button>
+                                    <div class="round-header-actions">
+                                        <button type="button" class="btn-symbol" onclick="moveItemUp(this, '.round-input-group')" title="Move this round up">&#129093;</button>
+                                        <button type="button" class="btn-symbol" onclick="moveItemDown(this, '.round-input-group')" title="Move this round down">&#129095;</button>
+                                        <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                                    </div>
                                 </div>
                                 <textarea name="Sections[@i].RoundTexts[@j]" rows="2" class="round-text form-control">@roundTexts[j]</textarea>
                             </div>
@@ -106,7 +112,7 @@
                         <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
                     </div>
 
-                    <div class="section-validation-results" id="sectionResults_@i">
+                    <div class="section-validation-results" id="sectionResults_@i" style="margin-top: 1rem;">
                         @if (section.Rounds.Count > 0)
                         {
                             <h3 class="results-title">Validation Results</h3>
@@ -176,15 +182,21 @@
     <template id="sectionTemplate">
         <article class="section-group pattern-section" data-section-index="__SECTION_INDEX__">
             <div class="section-header">
-                <div class="section-title-group" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap; width:100%; margin-bottom:0.75rem;">
-                    <label class="section-label" for="@($"Sections_[__SECTION_INDEX__]__SectionName")" style="position: relative; top: 4mm;">Section Name</label>
-                    <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
+                <div class="section-title-group">
+                    <div class="section-title-row">
+                        <label class="section-label" for="@($"Sections_[__SECTION_INDEX__]__SectionName")" style="margin-bottom: -20px;">Section Name</label>
+                        <div class="section-actions-row">
+                                    <button type="button" class="btn-symbol" onclick="moveItemUp(this, '.pattern-section')" title="Move this section up">&#129093;</button>
+                                    <button type="button" class="btn-symbol" onclick="moveItemDown(this, '.pattern-section')" title="Move this section down">&#129095;</button>
+                            <button type="button" class="btn btn-save" onclick="removeSection(this)">🗑️ Remove Section</button>
+                        </div>
+                    </div>
                     <input type="text"
                         class="form-control styled-text-input section-name-input"
                         id="@($"Sections_[__SECTION_INDEX__]__SectionName")"
                         name="Sections[__SECTION_INDEX__].SectionName"
                         value=""
-                        placeholder="Head, Body, Sleeves, etc." />
+                        placeholder="Head, Body, Arms, etc." />
                 </div>
 
             </div>
@@ -198,7 +210,8 @@
                 <button type="button" class="btn btn-validate" onclick="validateSection(this)">✓ Validate Section</button>
             </div>
 
-            <div class="section-validation-results" id="sectionResults___SECTION_INDEX__"></div>
+            <div class="section-validation-results" id="sectionResults___SECTION_INDEX__" style="margin-top: 1rem;">
+            </div>
         </article>
     </template>
 
@@ -206,9 +219,11 @@
         <div class="round-input-group" data-round-index="__ROUND_INDEX__">
             <div class="round-header">
                 <label class="round-label">Round __ROUND_NUMBER__</label>
-                <button type="button" class="btn-symbol" onclick="moveRoundUp(this)" title="Move this round up" style="position: absolute; right: 90px; top: -8px;">&#129093;</button>
-                <button type="button" class="btn-symbol" onclick="moveRoundDown(this)" title="Move this round down" style="position: absolute; right: 50px;">&#129095;</button>
-                <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round" style="position: absolute; right: 0;">🗑️</button>              
+                <div class="round-header-actions">
+                    <button type="button" class="btn-symbol" onclick="moveItemUp(this, '.round-input-group')" title="Move this round up">&#129093;</button>
+                    <button type="button" class="btn-symbol" onclick="moveItemDown(this, '.round-input-group')" title="Move this round down">&#129095;</button>
+                    <button type="button" class="btn-symbol" onclick="deleteRound(this)" title="Delete this round">🗑️</button>
+                </div>
             </div>
             <textarea name="Sections[__SECTION_INDEX__].RoundTexts[__ROUND_INDEX__]" rows="2" class="round-text form-control" value=""></textarea>
         </div>
@@ -332,24 +347,36 @@
             reindexSections();
         }
 
-        function moveRoundUp(button) {
-            const round = button.closest('.round-input-group');
-            const previousRound = round.previousElementSibling;
-
-            if (previousRound) {
-                round.parentNode.insertBefore(round, previousRound);
-                reindexSections();
+        function moveItem(button, selector, offset) {
+            if (typeof selector !== 'string' || selector.length === 0) {
+                return;
             }
+
+            const item = button.closest(selector);
+            if (!item) {
+                return;
+            }
+
+            const sibling = offset < 0 ? item.previousElementSibling : item.nextElementSibling;
+            if (!sibling) {
+                return;
+            }
+
+            if (offset < 0) {
+                item.parentNode.insertBefore(item, sibling);
+            } else {
+                item.parentNode.insertBefore(sibling, item);
+            }
+
+            reindexSections();
         }
 
-        function moveRoundDown(button) {
-            const round = button.closest('.round-input-group');
-            const nextRound = round.nextElementSibling;
+        function moveItemUp(button, selector) {
+            moveItem(button, selector, -1);
+        }
 
-            if (nextRound) {
-                round.parentNode.insertBefore(nextRound, round);
-                reindexSections();
-            }
+        function moveItemDown(button, selector) {
+            moveItem(button, selector, 1);
         }
 
         async function validateSection(button) {

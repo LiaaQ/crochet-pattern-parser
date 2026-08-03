@@ -5,6 +5,7 @@ public enum TokenType
     Number,
     Stitch,
     Color,
+    Unknown,
     LParen,
     RParen,
     Semicolon,
