@@ -20,6 +20,60 @@
         <h2>@ViewData["Title"]</h2>
     </div>
 
+    <div class="abbreviation-guide">
+        <details class="guide-details">
+            <summary>📘 Stitch Abbreviation Guide</summary>
+            <div class="guide-content">
+                <table class="abbreviation-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Abbreviation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/slst.svg" alt="Slip stitch symbol" /></td>
+                            <td>Slip stitch</td>
+                            <td>slst</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/sc.svg" alt="Single crochet symbol" /></td>
+                            <td>Single crochet</td>
+                            <td>sc</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/inc.svg" alt="Increase symbol" /></td>
+                            <td>Increase</td>
+                            <td>inc</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/dec.svg" alt="Decrease symbol" /></td>
+                            <td>Decrease</td>
+                            <td>dec</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/hdc.svg" alt="Half double crochet symbol"" /></td>
+                            <td>Half double crochet</td>
+                            <td>hdc</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/dc.svg" alt="Double crochet symbol" /></td>
+                            <td>Double crochet</td>
+                            <td>dc</td>
+                        </tr>
+                        <tr>
+                            <td><img class="crochet-symbol" src="images/symbols/tr.svg" alt="Triple crochet symbol" /></td>
+                            <td>Triple crochet</td>
+                            <td>tr</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+
     @if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"]?.ToString() == "True")
     {
         <div class="alert alert-info" role="alert">

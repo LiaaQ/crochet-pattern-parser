@@ -76,7 +76,7 @@ public class Tokenizer
 
         return word switch
         {
-            "sc" or "hdc" or "dc" or "trc" or "inc" or "dec" or "mr" or "slst"
+            "sc" or "hdc" or "dc" or "tr" or "inc" or "dec" or "mr" or "slst"
                 => new Token(TokenType.Stitch, word),
 
             "FO"
