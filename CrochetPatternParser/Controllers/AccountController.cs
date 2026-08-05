@@ -7,11 +7,13 @@ namespace CrochetPatternParser.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUserEntity> _userManager;
         private readonly SignInManager<ApplicationUserEntity> _signInManager;
 
-        public AccountController(UserManager<ApplicationUserEntity> userManager, SignInManager<ApplicationUserEntity> signInManager)
+        public AccountController(ApplicationDbContext db, UserManager<ApplicationUserEntity> userManager, SignInManager<ApplicationUserEntity> signInManager)
         {
+            _db = db;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -29,10 +31,11 @@ namespace CrochetPatternParser.Controllers
 
             if (result.Succeeded)
             {
+                await SeedDefaultExamplePatternAsync(user.Id);
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 
                 // If user was redirected from a save attempt, redirect to pattern page
-                if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"].ToString() == "True")
+                if (TempData["FromSaveAttempt"]?.ToString() == "True")
                 {
                     TempData["PatternTitle"] = TempData["PatternTitle"];
                     TempData["PatternRoundTexts"] = TempData["PatternRoundTexts"];
@@ -62,7 +65,7 @@ namespace CrochetPatternParser.Controllers
             if (result.Succeeded)
             {
                 // If user was redirected from a save attempt, redirect to pattern page
-                if (TempData["FromSaveAttempt"] != null && TempData["FromSaveAttempt"].ToString() == "True")
+                if (TempData["FromSaveAttempt"]?.ToString() == "True")
                 {
                     TempData["PatternTitle"] = TempData["PatternTitle"];
                     TempData["PatternRoundTexts"] = TempData["PatternRoundTexts"];
@@ -83,6 +86,108 @@ namespace CrochetPatternParser.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Pattern");
+        }
+
+        private async Task SeedDefaultExamplePatternAsync(string userId)
+        {
+            PatternEntity DefaultExamplePattern = CreateDefaultExamplePattern();
+            var examplePattern = new PatternEntity
+            {
+                Title = DefaultExamplePattern.Title,
+                UserId = userId,
+                ImagePath = DefaultExamplePattern.ImagePath,
+                Sections = DefaultExamplePattern.Sections
+                    .Select((section, index) => new SectionEntity
+                    {
+                        SectionNumber = index + 1,
+                        SectionName = section.SectionName,
+                        Rounds = section.Rounds
+                            .Select((round, roundIndex) => new RoundEntity
+                            {
+                                RoundNumber = roundIndex + 1,
+                                Text = round.Text
+                            })
+                            .ToList()
+                    })
+                    .ToList()
+            };
+
+            _db.Patterns.Add(examplePattern);
+            await _db.SaveChangesAsync();
+        }
+
+        private static PatternEntity CreateDefaultExamplePattern()
+        {
+            return new PatternEntity
+            {
+                Title = "Example Pattern",
+                Sections = new List<SectionEntity>
+                {
+                    new SectionEntity
+                    {
+                        SectionNumber = 1,
+                        SectionName = "Head",
+                        Rounds = new List<RoundEntity>
+                        {
+                            new RoundEntity {
+                                RoundNumber = 1,
+                                Text = "6mr"
+                            }, new RoundEntity {
+                                RoundNumber = 2,
+                                Text = "6inc"
+                            }, new RoundEntity {
+                                RoundNumber = 3,
+                                Text = "(sc, inc) 6"
+                            }, new RoundEntity {
+                                RoundNumber = 4,
+                                Text = "(2sc inc) 6"
+                            }, new RoundEntity {
+                                RoundNumber = 5,
+                                Text = "24sc"
+                            }, new RoundEntity {
+                                RoundNumber = 6,
+                                Text = "(2sc, dec) 6"
+                            }, new RoundEntity{
+                                RoundNumber = 7,
+                                Text = "(sc, dec) 6"
+                            }, new RoundEntity {
+                                RoundNumber = 8,
+                                Text = "6dec FO"
+                            }
+                        }
+                    },
+                    new SectionEntity
+                    {
+                        SectionNumber = 2,
+                        SectionName = "Error Section",
+                        Rounds = new List<RoundEntity>
+                        {
+                            new RoundEntity {
+                                RoundNumber = 1,
+                                Text = "6mr"
+                            }, new RoundEntity {
+                                RoundNumber = 2,
+                                Text = "7inc"
+                            }, new RoundEntity {
+                                RoundNumber = 3,
+                                Text = "(sc, inc) 8"
+                            }, new RoundEntity {
+                                RoundNumber = 4,
+                                Text = "9sc @blue 9sc"
+                            }, new RoundEntity {
+                                RoundNumber = 5,
+                                Text = "@red 9sc @blue 9sc"
+                            }, new RoundEntity {
+                                RoundNumber = 6,
+                                Text = "18sc"
+                            }, new RoundEntity{
+                                RoundNumber = 7,
+                                Text = "(sc, dec) 6 FO"
+                            }
+                        }
+                    }
+                }
+            };
         }
     }
 }
