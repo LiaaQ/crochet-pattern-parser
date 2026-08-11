@@ -15,9 +15,21 @@ public class PatternValidator
 
         if (roundIndex == 1)
         {
-            if (output < 1)
-                roundResult.Error = "Round 1 must produce at least 1 stitch";
+            if (round.HasIncOrDec())
+            {
+                roundResult.Error = "Round 1 cannot contain inc or dec stitches.";
+                return roundResult;
+            }
 
+            if (output < 1)
+                roundResult.Error = "Round 1 must produce at least 1 stitch.";
+
+            return roundResult;
+        }
+
+        if (round.HasInvalidStitchesInIncreaseGroup())
+        {
+            roundResult.Error = "Decrease or Increase stitches should not be inside an increase group.";
             return roundResult;
         }
 
@@ -25,7 +37,7 @@ public class PatternValidator
 
         if (expectedStitchConsumed.HasValue && input != expectedStitchConsumed.Value)
         {
-            roundResult.Error = $"Expected to use {expectedStitchConsumed.Value} stitches, but used {input}";
+            roundResult.Error = $"Expected to use {expectedStitchConsumed.Value} stitches, but used {input}.";
         }
 
         return roundResult;
@@ -53,7 +65,21 @@ public class PatternValidator
             // Round 1: must produce ≥1 stitch
             if (i == 0 && output < 1)
             {
-                roundResult.Error = "Round 1 must produce at least 1 stitch";
+                roundResult.Error = "Round 1 must produce at least 1 stitch.";
+                result.Rounds.Add(roundResult);
+                break;
+            }
+
+            if (i == 0 && round.HasIncOrDec())
+            {
+                roundResult.Error = "Round 1 cannot contain inc or dec stitches.";
+                result.Rounds.Add(roundResult);
+                break;
+            }
+
+            if (i > 0 && round.HasInvalidStitchesInIncreaseGroup())
+            {
+                roundResult.Error = "An Increase group shouldn't contain inc or dec stitches.";
                 result.Rounds.Add(roundResult);
                 break;
             }
@@ -62,7 +88,7 @@ public class PatternValidator
             if (i > 0 && input != previousOutput)
             {
                 roundResult.ExpectedStitchConsumed = previousOutput;
-                roundResult.Error = $"Expected to use {previousOutput} stitches, but used {input}";
+                roundResult.Error = $"Expected to use {previousOutput} stitches, but used {input}.";
                 result.Rounds.Add(roundResult);
                 break;
             }

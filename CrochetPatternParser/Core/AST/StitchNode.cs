@@ -15,6 +15,8 @@ public class StitchNode : IAstNode
         Count = count;
     }
 
+
+
     public int GetProducedStitches()
     {
         return StitchType switch

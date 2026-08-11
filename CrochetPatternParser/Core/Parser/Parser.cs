@@ -44,10 +44,11 @@ public class Parser
         {
             TokenType.Number or TokenType.Stitch => ParseStitch(),
             TokenType.LParen => ParseGroup(),
+            TokenType.LBracket => ParseIncrease(),
             TokenType.Color => ParseColor(),
             TokenType.FastenOff => ParseFastenOff(),
             TokenType.Unknown => throw new Exception(Peek().Lexeme),
-            _ => throw new Exception($"Unexpected token: {Peek().Type}")
+            _ => throw new Exception($"Unexpected token: {Peek().Type}.")
         };
     }
 
@@ -78,11 +79,28 @@ public class Parser
         Expect(TokenType.RParen);
 
         if (Peek().Type != TokenType.Number)
-            throw new Exception("Expected repeat count after group");
+            throw new Exception("Expected repeat count after group.");
 
         int repeat = int.Parse(Advance().Lexeme);
 
         return new GroupNode(stitches, repeat);
+    }
+
+    private IncreaseNode ParseIncrease()
+    {
+        Advance(); // '['
+
+        var stitches = new List<StitchNode>
+        {
+            ParseStitch()
+        };
+
+        while (Peek().Type == TokenType.Number || Peek().Type == TokenType.Stitch)
+            stitches.Add(ParseStitch());
+
+        Expect(TokenType.RBracket);
+
+        return new IncreaseNode(stitches);
     }
 
     private StitchNode ParseStitch()
@@ -122,7 +140,7 @@ public class Parser
     {
         if (Peek().Type != type)
             throw new Exception(
-                $"Expected {type}, got {Peek().Type} ('{Peek().Lexeme}')"
+                $"Expected {type}, got {Peek().Type} ('{Peek().Lexeme}')."
             );
 
         return Advance();

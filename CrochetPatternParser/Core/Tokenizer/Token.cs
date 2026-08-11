@@ -8,6 +8,8 @@ public enum TokenType
     Unknown,
     LParen,
     RParen,
+    LBracket,
+    RBracket,
     Semicolon,
     FastenOff,  // FO
     EndOfInput

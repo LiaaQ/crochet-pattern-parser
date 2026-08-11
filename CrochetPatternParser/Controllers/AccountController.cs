@@ -145,6 +145,9 @@ namespace CrochetPatternParser.Controllers
                                 RoundNumber = 5,
                                 Text = "24sc"
                             }, new RoundEntity {
+                                RoundNumber = 5,
+                                Text = "@red 8sc [4dc] @blue 3dec 9sc"
+                            }, new RoundEntity {
                                 RoundNumber = 6,
                                 Text = "(2sc, dec) 6"
                             }, new RoundEntity{

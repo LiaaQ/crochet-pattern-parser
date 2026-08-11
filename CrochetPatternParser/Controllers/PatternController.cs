@@ -264,7 +264,7 @@ namespace CrochetPatternParser.Controllers
                     sectionViewModel.Rounds.Add(new RoundViewModel
                     {
                         RoundIndex = roundNumber,
-                        Error = $"Unknown token: {ex.Message}"
+                        Error = $"{ex.Message}"
                     });
                     break;
                 }

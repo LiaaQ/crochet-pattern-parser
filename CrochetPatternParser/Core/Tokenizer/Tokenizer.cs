@@ -94,6 +94,8 @@ public class Tokenizer
         {
             '(' => new Token(TokenType.LParen, "("),
             ')' => new Token(TokenType.RParen, ")"),
+            '[' => new Token(TokenType.LBracket, "["),
+            ']' => new Token(TokenType.RBracket, "]"),
             ';' => new Token(TokenType.Semicolon, ";"),
             ',' => null,
             _ => new Token(TokenType.Unknown, $"Unexpected character: {c}")
