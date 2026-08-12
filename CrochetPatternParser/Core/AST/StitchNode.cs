@@ -23,6 +23,7 @@ public class StitchNode : IAstNode
         {
             "inc" => Count * 2,
             "slst" => 0,
+            "sk" => 0,
             _ => Count
         };
     }

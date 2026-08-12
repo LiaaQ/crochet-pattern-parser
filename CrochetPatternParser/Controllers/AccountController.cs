@@ -150,7 +150,7 @@ namespace CrochetPatternParser.Controllers
                             }, new RoundEntity {
                                 RoundNumber = 6,
                                 Text = "(2sc, dec) 6"
-                            }, new RoundEntity{
+                            }, new RoundEntity {
                                 RoundNumber = 7,
                                 Text = "(sc, dec) 6"
                             }, new RoundEntity {
