@@ -161,7 +161,7 @@ main {
     left: 1rem;
     bottom: 1rem;
     z-index: 1200;
-    width: min(320px, calc(100vw - 2rem));
+    width: min(280px, calc(100vw - 2rem));
     max-height: min(70vh, 480px);
     overflow: hidden;
     border: 1px solid #d7d7d7;

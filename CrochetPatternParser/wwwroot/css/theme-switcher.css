@@ -1,8 +1,8 @@
 /* Theme Switcher */
 .theme-switcher {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    bottom: 5px;
+    right: 10px;
     z-index: 1000;
     display: flex;
     gap: 10px;
